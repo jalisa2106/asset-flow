@@ -213,7 +213,7 @@ export default function OrganizationSetupPage() {
   };
 
   return (
-    <div className="flex-1 bg-background min-h-screen p-8 text-foreground">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Upper bar with title and context-aware action button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
