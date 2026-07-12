@@ -18,8 +18,8 @@ export default function DashboardPage() {
       <div className="fixed top-16 left-0 lg:left-64 right-0 z-20 bg-background px-4 md:px-6 lg:px-8 py-4 md:py-5">
         <div className="mx-auto max-w-6xl flex items-center justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-serif">Today's Overview</h1>
-            <p className="text-muted-foreground mt-1 text-xs md:text-sm">Welcome back, John. Here's what's happening today.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-serif">Today&apos;s Overview</h1>
+            <p className="text-muted-foreground mt-1 text-xs md:text-sm">Welcome back, John. Here&apos;s what&apos;s happening today.</p>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth-context';
-import { can } from '@/lib/permissions';
+
 import { createTransferRequestSchema } from '@/lib/validators/allocation.schema';
 import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
 import { MAX_PAGE_SIZE } from '@/lib/constants';

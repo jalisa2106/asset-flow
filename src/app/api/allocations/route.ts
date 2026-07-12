@@ -50,6 +50,23 @@ export async function POST(req: NextRequest) {
   }).select().single();
 
   if (error) {
+    if (error.code === '23505' && error.message.includes('uidx_one_active_allocation_per_asset')) {
+      const { data: currentAllocation } = await supabase
+        .from('allocations')
+        .select('id, employee_profiles(full_name), departments(name)')
+        .eq('asset_id', v.assetId)
+        .eq('status', 'Active')
+        .single();
+
+      return NextResponse.json({
+        error: 'This asset is already allocated',
+        code: 'ALREADY_ALLOCATED',
+        currentHolder: currentAllocation?.employee_profiles?.full_name ?? null,
+        currentDepartment: currentAllocation?.departments?.name ?? null,
+        currentAllocationId: currentAllocation?.id ?? null,
+      }, { status: 409 });
+    }
+
     return fromPostgresError(error, {
       onExclusionViolation: () => apiError('Asset is already allocated during this period', 409),
     });

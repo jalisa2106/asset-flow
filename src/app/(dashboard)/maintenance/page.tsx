@@ -6,22 +6,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { 
-  Wrench, 
   Plus, 
   X, 
   AlertCircle, 
   ArrowRight, 
   CheckCircle2, 
-  Play, 
-  UserCheck, 
-  ThumbsUp, 
   Clock 
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   createMaintenanceSchema,
-  type CreateMaintenanceInput,
 } from "@/lib/validators/maintenance.schema";
 
 // --- TYPES ---
@@ -121,6 +116,7 @@ export default function MaintenancePage() {
     if (!selectedAsset) return;
 
     const newRequest: MaintenanceRequest = {
+      // eslint-disable-next-line react-hooks/purity
       id: `req-${Date.now()}`,
       assetTag: selectedAsset.tag,
       assetName: selectedAsset.name,

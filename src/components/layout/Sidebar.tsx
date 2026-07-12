@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, Building, Box, Repeat, Calendar, 
-  Wrench, ShieldCheck, BarChart, Bell, LogOut, X
+  Wrench, ShieldCheck, BarChart, Bell, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";

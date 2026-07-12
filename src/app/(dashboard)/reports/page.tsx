@@ -8,8 +8,7 @@ import {
   Download, 
   ArrowUpRight, 
   ArrowDownRight, 
-  AlertTriangle,
-  FileSpreadsheet
+  AlertTriangle
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
