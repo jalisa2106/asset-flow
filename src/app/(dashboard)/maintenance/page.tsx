@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "sonner";
 import { 
   Wrench, 
@@ -19,8 +20,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import {
-  maintenanceRequestSchema,
-  type MaintenanceRequestInput,
+  createMaintenanceSchema,
+  type CreateMaintenanceInput,
 } from "@/lib/validators/maintenance.schema";
 
 // --- TYPES ---
@@ -94,10 +95,10 @@ const INITIAL_REQUESTS: MaintenanceRequest[] = [
 ];
 
 const MOCK_ASSETS = [
-  { id: "asset-1", tag: "AF-0062", name: "Epson Projector B1" },
-  { id: "asset-2", tag: "AF-0114", name: "Dell Laptop Latitude 5420" },
-  { id: "asset-3", tag: "AF-0033", name: "Herman Miller Aeron Chair" },
-  { id: "asset-4", tag: "AF-0891", name: "Logitech MX Mouse" },
+  { id: "8816c873-10d9-482a-bc91-9e767ebdb15a", tag: "AF-0062", name: "Epson Projector B1" },
+  { id: "7716c873-10d9-482a-bc91-9e767ebdb15b", tag: "AF-0114", name: "Dell Laptop Latitude 5420" },
+  { id: "6616c873-10d9-482a-bc91-9e767ebdb15c", tag: "AF-0033", name: "Herman Miller Aeron Chair" },
+  { id: "5516c873-10d9-482a-bc91-9e767ebdb15d", tag: "AF-0891", name: "Logitech MX Mouse" },
 ];
 
 export default function MaintenancePage() {
@@ -110,12 +111,12 @@ export default function MaintenancePage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<MaintenanceRequestInput>({
-    resolver: zodResolver(maintenanceRequestSchema),
-    defaultValues: { assetId: "", title: "", description: "", priority: "Medium" },
+  } = useForm<z.input<typeof createMaintenanceSchema>>({
+    resolver: zodResolver(createMaintenanceSchema),
+    defaultValues: { assetId: "", issueDescription: "", priority: "Medium" },
   });
 
-  const onSubmit = (data: MaintenanceRequestInput) => {
+  const onSubmit = (data: z.input<typeof createMaintenanceSchema>) => {
     const selectedAsset = MOCK_ASSETS.find((a) => a.id === data.assetId);
     if (!selectedAsset) return;
 
@@ -123,8 +124,8 @@ export default function MaintenancePage() {
       id: `req-${Date.now()}`,
       assetTag: selectedAsset.tag,
       assetName: selectedAsset.name,
-      title: data.title,
-      description: data.description,
+      title: data.issueDescription.split(" ").slice(0, 4).join(" ") + "...",
+      description: data.issueDescription,
       priority: data.priority,
       status: "Pending",
       updatedAt: new Date().toLocaleDateString("en-GB", {
@@ -340,28 +341,15 @@ export default function MaintenancePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground/80">Issue Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Screen flickering, Keypad issue"
-                  className="block w-full rounded-lg border border-input bg-background py-2.5 px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...register("title")}
-                />
-                {errors.title && (
-                  <p className="text-xs font-medium text-destructive mt-1">{errors.title.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-1">
                 <label className="text-xs font-semibold text-foreground/80">Description</label>
                 <textarea
                   placeholder="Describe the issues or damages in detail..."
                   rows={3}
                   className="block w-full rounded-lg border border-input bg-background py-2.5 px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
-                  {...register("description")}
+                  {...register("issueDescription")}
                 />
-                {errors.description && (
-                  <p className="text-xs font-medium text-destructive mt-1">{errors.description.message}</p>
+                {errors.issueDescription && (
+                  <p className="text-xs font-medium text-destructive mt-1">{errors.issueDescription.message}</p>
                 )}
               </div>
 
