@@ -17,9 +17,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       status: decision, 
       approved_by: profile!.id,
       approved_at: new Date().toISOString()
-    })
+    } as any)
     .eq('id', id)
-    .eq('status', 'Pending')
+    .eq('status', 'Requested')
     .select()
     .single();
 

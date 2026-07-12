@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "sonner";
 import { 
   Building2, 
@@ -55,10 +56,10 @@ interface Employee {
 
 // --- MOCK INITIAL STATE ---
 const INITIAL_DEPARTMENTS: Department[] = [
-  { id: "dept-1", name: "Engineering", head: "Alice Vance", parentDeptId: "", status: "Active" },
-  { id: "dept-2", name: "Frontend Core", head: "Bob Smith", parentDeptId: "dept-1", status: "Active" },
-  { id: "dept-3", name: "Design Studio", head: "Clara Jones", parentDeptId: "dept-1", status: "Active" },
-  { id: "dept-4", name: "Operations", head: "Daniel Kim", parentDeptId: "", status: "Inactive" },
+  { id: "11111111-2222-3333-4444-55555555555a", name: "Engineering", head: "Alice Vance", parentDeptId: "", status: "Active" },
+  { id: "11111111-2222-3333-4444-55555555555b", name: "Frontend Core", head: "Bob Smith", parentDeptId: "11111111-2222-3333-4444-55555555555a", status: "Active" },
+  { id: "11111111-2222-3333-4444-55555555555c", name: "Design Studio", head: "Clara Jones", parentDeptId: "11111111-2222-3333-4444-55555555555a", status: "Active" },
+  { id: "11111111-2222-3333-4444-55555555555d", name: "Operations", head: "Daniel Kim", parentDeptId: "", status: "Inactive" },
 ];
 
 const INITIAL_CATEGORIES: Category[] = [
@@ -69,12 +70,12 @@ const INITIAL_CATEGORIES: Category[] = [
 ];
 
 const INITIAL_EMPLOYEES: Employee[] = [
-  { id: "emp-1", fullName: "Alice Vance", email: "alice.vance@company.com", role: "Department Head", departmentId: "dept-1" },
-  { id: "emp-2", fullName: "Bob Smith", email: "bob.smith@company.com", role: "Department Head", departmentId: "dept-2" },
-  { id: "emp-3", fullName: "Clara Jones", email: "clara.jones@company.com", role: "Employee", departmentId: "dept-3" },
-  { id: "emp-4", fullName: "Frank Castle", email: "frank.castle@company.com", role: "Asset Manager", departmentId: "" },
-  { id: "emp-5", fullName: "Grace Hopper", email: "grace.hopper@company.com", role: "Admin", departmentId: "" },
-  { id: "emp-6", fullName: "Arjun Nair", email: "arjun.nair@company.com", role: "Employee", departmentId: "dept-1" },
+  { id: "22222222-3333-4444-5555-66666666666a", fullName: "Alice Vance", email: "alice.vance@company.com", role: "Department Head", departmentId: "11111111-2222-3333-4444-55555555555a" },
+  { id: "22222222-3333-4444-5555-66666666666b", fullName: "Bob Smith", email: "bob.smith@company.com", role: "Department Head", departmentId: "11111111-2222-3333-4444-55555555555b" },
+  { id: "22222222-3333-4444-5555-66666666666c", fullName: "Clara Jones", email: "clara.jones@company.com", role: "Employee", departmentId: "11111111-2222-3333-4444-55555555555c" },
+  { id: "22222222-3333-4444-5555-66666666666d", fullName: "Frank Castle", email: "frank.castle@company.com", role: "Asset Manager", departmentId: "" },
+  { id: "22222222-3333-4444-5555-66666666666e", fullName: "Grace Hopper", email: "grace.hopper@company.com", role: "Admin", departmentId: "" },
+  { id: "22222222-3333-4444-5555-66666666666f", fullName: "Arjun Nair", email: "arjun.nair@company.com", role: "Employee", departmentId: "11111111-2222-3333-4444-55555555555a" },
 ];
 
 export default function OrganizationSetupPage() {
@@ -97,9 +98,14 @@ export default function OrganizationSetupPage() {
     handleSubmit: handleDeptSubmit,
     formState: { errors: deptErrors },
     reset: resetDeptForm,
-  } = useForm<DepartmentInput>({
-    resolver: zodResolver(departmentSchema),
-    defaultValues: { name: "", head: "", parentDeptId: "", status: "Active" },
+  } = useForm<z.input<typeof departmentSchema>>({
+    resolver: (values, context, options) => {
+      const cleaned = { ...values };
+      if (cleaned.parentDeptId === "") delete cleaned.parentDeptId;
+      if (cleaned.headEmployeeId === "") delete cleaned.headEmployeeId;
+      return zodResolver(departmentSchema)(cleaned, context, options);
+    },
+    defaultValues: { name: "", headEmployeeId: "", parentDeptId: "", status: "Active" },
   });
 
   // Category Form
@@ -135,11 +141,12 @@ export default function OrganizationSetupPage() {
     defaultValues: { role: "Employee", departmentId: "" },
   });
 
-  const onAddDept = (data: DepartmentInput) => {
+  const onAddDept = (data: z.input<typeof departmentSchema>) => {
+    const headEmpName = employees.find((e) => e.id === data.headEmployeeId)?.fullName || "None";
     const newDept: Department = {
       id: `dept-${Date.now()}`,
       name: data.name,
-      head: data.head,
+      head: headEmpName,
       parentDeptId: data.parentDeptId || "",
       status: data.status,
     };
@@ -438,15 +445,18 @@ export default function OrganizationSetupPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground/80">Department Head</label>
-                <input
-                  type="text"
-                  placeholder="Full name of head"
+                <label className="text-xs font-semibold text-foreground/80">Department Head (Optional)</label>
+                <select
                   className="block w-full rounded-lg border border-input bg-background py-2.5 px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...registerDept("head")}
-                />
-                {deptErrors.head && (
-                  <p className="text-xs font-medium text-destructive mt-1">{deptErrors.head.message}</p>
+                  {...registerDept("headEmployeeId")}
+                >
+                  <option value="">No Head assigned</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>{emp.fullName}</option>
+                  ))}
+                </select>
+                {deptErrors.headEmployeeId && (
+                  <p className="text-xs font-medium text-destructive mt-1">{deptErrors.headEmployeeId.message}</p>
                 )}
               </div>
 
