@@ -276,7 +276,7 @@ function LoginForm() {
               <div className="rounded-lg border border-positive-foreground/10 bg-positive/40 dark:bg-positive/10 p-3.5 text-xs text-positive-foreground dark:text-positive flex items-start space-x-2">
                 <ShieldAlert className="h-4 w-4 shrink-0 text-positive-foreground/80 dark:text-positive mt-0.5" />
                 <span>
-                  Creating an account registers you as an **Employee**. Administrative and management roles can only be assigned later by an Administrator.
+                  Creating an account registers you as an <strong>Employee</strong>. Administrative and management roles can only be assigned later by an Administrator.
                 </span>
               </div>
 
