@@ -122,7 +122,7 @@ export default function MaintenancePage() {
       assetName: selectedAsset.name,
       title: data.issueDescription.split(" ").slice(0, 4).join(" ") + "...",
       description: data.issueDescription,
-      priority: data.priority,
+      priority: data.priority || "Medium",
       status: "Pending",
       updatedAt: new Date().toLocaleDateString("en-GB", {
         day: "numeric",

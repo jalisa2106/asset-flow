@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     department:departments(name)
   `, { count: 'exact' });
 
-  if (status) query = query.eq('status', status);
+  if (status) query = query.eq('status', status as any);
   if (employeeId) query = query.eq('employee_id', employeeId);
   if (departmentId) query = query.eq('department_id', departmentId);
 

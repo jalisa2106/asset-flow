@@ -10,9 +10,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data, error } = await supabase
     .from('audit_cycles')
-    .update({ status: 'Completed' })
+    .update({ status: 'Closed' })
     .eq('id', id)
-    .eq('status', 'In Progress')
+    .eq('status', 'Open')
     .select()
     .single();
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: missingItems } = await supabase
     .from('audit_items')
     .select('asset_id')
-    .eq('cycle_id', id)
+    .eq('audit_cycle_id', id)
     .eq('verification', 'Missing');
 
   if (missingItems && missingItems.length > 0) {

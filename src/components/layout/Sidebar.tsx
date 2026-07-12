@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";
 import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { LogoutButton } from "./LogoutButton";
 
 const NAV_ITEMS = [
@@ -26,11 +27,28 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const pathname = usePathname();
   const { isMobileSidebarOpen, closeMobileSidebar } = useUiStore();
+  const profile = useAuthStore((state) => state.profile);
 
   // Close sidebar on route change for mobile
   useEffect(() => {
     closeMobileSidebar();
   }, [pathname, closeMobileSidebar]);
+
+  const filteredNavItems = NAV_ITEMS.filter((item) => {
+    if (!profile) return false;
+    if (item.href === '/organization' && profile.role !== 'Admin') return false;
+    if (item.href === '/reports' && profile.role === 'Employee') return false;
+    return true;
+  });
+
+  if (!profile) return null; // or a loading state
+
+  const initials = profile.full_name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   return (
     <>
@@ -65,7 +83,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
@@ -89,11 +107,11 @@ export function Sidebar() {
         <div className="mt-auto border-t border-border pt-4">
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-              JD
+              {initials}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-foreground leading-none">John Doe</span>
-              <span className="text-xs text-muted-foreground mt-1">Employee</span>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-medium text-foreground leading-none truncate">{profile.full_name}</span>
+              <span className="text-xs text-muted-foreground mt-1 truncate">{profile.role}</span>
             </div>
             <LogoutButton />
           </div>

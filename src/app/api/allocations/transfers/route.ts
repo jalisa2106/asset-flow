@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     approved_by_profile:employee_profiles!approved_by(full_name)
   `, { count: 'exact' });
 
-  if (status) query = query.eq('status', status);
+  if (status) query = query.eq('status', status as any);
 
   const from = (page - 1) * pageSize;
   query = query.range(from, from + pageSize - 1).order('created_at', { ascending: false });
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   const { data: allocation, error: allocError } = await supabase
     .from('allocations')
-    .select('employee_id, status')
+    .select('employee_id, status, asset_id')
     .eq('id', v.allocationId)
     .single();
 
@@ -51,10 +51,11 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase.from('transfer_requests').insert({
     allocation_id: v.allocationId,
+    asset_id: allocation.asset_id,
     from_employee_id: profile.id,
     to_employee_id: v.toEmployeeId,
     reason: v.reason,
-  }).select().single();
+  } as any).select().single();
 
   if (error) return fromPostgresError(error);
 
