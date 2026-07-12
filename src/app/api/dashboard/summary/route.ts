@@ -12,8 +12,8 @@ export async function GET() {
     supabase.from('assets').select('id', { count: 'exact', head: true }).eq('status', 'Reserved'),
     supabase.from('resource_bookings').select('id', { count: 'exact', head: true }).in('status', ['Upcoming', 'Ongoing']),
     supabase.from('transfer_requests').select('id', { count: 'exact', head: true }).eq('status', 'Requested'),
-    supabase.from('allocations').select('id, expected_return_date, asset_id, employee_id').eq('status', 'Active').lt('expected_return_date', new Date().toISOString().slice(0, 10)),
-    supabase.from('activity_log').select('id, action, entity_type, entity_id, created_at, actor_id').order('created_at', { ascending: false }).limit(8),
+    supabase.from('allocations').select('id, expected_return_date, asset_id, employee_id, assets(name, asset_tag), employee_profiles!employee_id(full_name)').eq('status', 'Active').lt('expected_return_date', new Date().toISOString().slice(0, 10)),
+    supabase.from('activity_log').select('id, action, entity_type, entity_id, created_at, actor_id, employee_profiles(full_name)').order('created_at', { ascending: false }).limit(8),
   ]);
 
   return NextResponse.json({

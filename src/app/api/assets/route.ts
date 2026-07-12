@@ -20,8 +20,10 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('assets')
-    .select('id, asset_tag, name, category_id, status, location, department_id, is_bookable', { count: 'exact' });
+    .select('*, asset_categories(name), departments(name)', { count: 'exact' });
 
+  const bookable = searchParams.get('bookable');
+  if (bookable === 'true') query = query.eq('is_bookable', true);
   if (q) query = query.textSearch('asset_tag', q, { type: 'websearch', config: 'english' });
   if (category) query = query.eq('category_id', category);
   if (status) query = query.eq('status', status as any);

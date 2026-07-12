@@ -1,74 +1,124 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle2, CalendarDays, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus, CalendarDays, MapPin, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AuditorVerificationGrid, AuditItem } from "@/components/audits/AuditorVerificationGrid";
-import { DiscrepancyReport } from "@/components/audits/DiscrepancyReport";
-import { BadgeStatus } from "@/components/assets/AssetStatusBadge";
+import { apiFetch } from "@/lib/apiFetch";
 
-const MOCK_AUDIT_ITEMS: AuditItem[] = [
-  { id: "1", tag: "AF-0114", name: "Dell XPS 15", location: "Engineering", verification: "verified" as BadgeStatus },
-  { id: "2", tag: "AF-0062", name: "Epson Projector", location: "Room B2", verification: "damaged" as BadgeStatus },
-  { id: "3", tag: "AF-0891", name: "Ergonomic Chair", location: "Storage A", verification: "missing" as BadgeStatus },
-  { id: "4", tag: "AF-0102", name: "MacBook Pro M2", location: "Design Studio", verification: "verified" as BadgeStatus },
-];
+interface AuditCycle {
+  id: string;
+  name: string;
+  scope_location?: string;
+  start_date: string;
+  end_date: string;
+  status: "Open" | "Closed";
+  department?: { name: string };
+  assigned_auditors?: string[];
+}
 
-export default function AuditsPage() {
-  const [items, setItems] = useState(MOCK_AUDIT_ITEMS);
+export default function AuditsListPage() {
+  const [cycles, setCycles] = useState<AuditCycle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const updateVerification = (id: string, status: BadgeStatus) => {
-    setItems(items.map(item => item.id === id ? { ...item, verification: status } : item));
-  };
+  useEffect(() => {
+    async function fetchCycles() {
+      try {
+        const res = await apiFetch("/api/audits");
+        if (!res.ok) throw new Error("Failed to retrieve audit cycles.");
+        const json = await res.json();
+        setCycles(json.data || json || []);
+      } catch (err: any) {
+        setError(err.message || "An error occurred.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCycles();
+  }, []);
 
-  const discrepanciesCount = items.filter(i => i.verification !== "verified").length;
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="fixed top-16 left-0 lg:left-64 right-0 z-20 bg-background px-4 md:px-6 lg:px-8 py-4 md:py-5">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-serif">Asset Audit</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Verify and reconcile physical assets.</p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-serif">Asset Audits</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Verify and reconcile physical inventory matching database states.</p>
         </div>
+        <Link href="/audits/new">
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex items-center gap-1.5 py-5 px-6 shadow-md">
+            <Plus className="h-4 w-4" />
+            <span>New Audit Cycle</span>
+          </Button>
+        </Link>
       </div>
 
-      <div className="pt-24 md:pt-28 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-
-      <div className="rounded-xl border border-border bg-card shadow-sm p-4 md:p-6 space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Active Audit Cycle: Q3 Engineering</h2>
-            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5"><CalendarDays className="h-4 w-4" /> Due: Aug 15, 2026</div>
-              <div className="flex items-center gap-1.5"><MapPin className="h-4 w-4" /> HQ - Floor 3</div>
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <span className="text-sm font-medium text-foreground">Assigned Auditors:</span>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="flex items-center gap-1.5"><div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">AR</div> A. Rao</span>
-              <span className="flex items-center gap-1.5"><div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">SI</div> S. Iqbal</span>
-            </div>
-          </div>
+      {error ? (
+        <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-destructive text-sm font-semibold">
+          {error}
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {cycles.map((cycle) => (
+            <div key={cycle.id} className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    cycle.status === "Open"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-950/30 dark:text-blue-300"
+                      : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+                  }`}>
+                    {cycle.status}
+                  </span>
+                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-semibold">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    <span>{cycle.start_date} to {cycle.end_date}</span>
+                  </div>
+                </div>
 
-      <AuditorVerificationGrid items={items} onUpdateVerification={updateVerification} />
+                <h3 className="text-lg font-bold text-foreground">{cycle.name}</h3>
 
-      {discrepanciesCount > 0 && (
-        <DiscrepancyReport 
-          title={`${discrepanciesCount} assets flagged`}
-          message="Discrepancy report generated automatically. Assets marked missing or damaged will require follow-up resolution."
-        />
+                <div className="space-y-1.5 text-xs text-muted-foreground font-medium pt-2">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    <span>Scope Dept: <strong>{cycle.department?.name || "All Departments"}</strong></span>
+                  </div>
+                  {cycle.scope_location && (
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span>Location: <strong>{cycle.scope_location}</strong></span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-5 border-t border-border mt-5 flex justify-end">
+                <Link href={`/audits/${cycle.id}`}>
+                  <Button variant="outline" className="gap-1.5 text-xs py-3 font-semibold">
+                    <span>Perform Verification</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ))}
+
+          {cycles.length === 0 && (
+            <div className="col-span-full border border-dashed border-border rounded-2xl p-12 text-center text-muted-foreground flex flex-col items-center gap-2">
+              <ShieldCheck className="h-8 w-8 text-muted-foreground" />
+              <span className="text-sm font-semibold">No active or closed audit cycles recorded.</span>
+            </div>
+          )}
+        </div>
       )}
-
-      <div className="pt-6 border-t border-border flex justify-end">
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground py-6 px-8 text-base shadow-md font-semibold">
-          <CheckCircle2 className="mr-2 h-5 w-5" />
-          Close Audit Cycle
-        </Button>
-      </div>
-      </div>
-    </>
+    </div>
   );
 }

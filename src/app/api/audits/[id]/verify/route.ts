@@ -21,8 +21,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (cycleError || !cycle) return apiError('Audit cycle not found', 404);
   if (cycle.status !== 'Open') return apiError('Audit cycle is not active', 400);
 
-  const assignedAuditors = cycle.audit_cycle_auditors.map((a: any) => a.employee_id);
-  if (!can.verifyAuditItem(profile, assignedAuditors)) return unauthorized();
+  const { data: auditors, error: auditorsError } = await supabase
+    .from('audit_cycle_auditors')
+    .select('employee_id')
+    .eq('audit_cycle_id', id);
+
+  if (auditorsError) return apiError(auditorsError.message, 400);
+
+  const auditorIds = (auditors || []).map((a) => a.employee_id);
+  if (!can.verifyAuditItem(profile, auditorIds)) return unauthorized();
 
   const { data, error } = await supabase
     .from('audit_items')

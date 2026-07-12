@@ -11,7 +11,7 @@ export interface AuditItem {
 
 interface AuditorVerificationGridProps {
   items: AuditItem[];
-  onUpdateVerification: (id: string, status: BadgeStatus) => void;
+  onUpdateVerification?: (id: string, status: BadgeStatus) => void;
 }
 
 export function AuditorVerificationGrid({ items, onUpdateVerification }: AuditorVerificationGridProps) {
@@ -39,23 +39,27 @@ export function AuditorVerificationGrid({ items, onUpdateVerification }: Auditor
                 <td className="px-6 py-4 text-muted-foreground">{item.location}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <div className="relative group/dropdown">
-                      <button className="flex items-center gap-2 border border-border bg-background rounded-md px-2 py-1 hover:border-primary/50 transition-colors">
-                        <AssetStatusBadge status={item.verification} />
-                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                      </button>
-                      <div className="absolute top-full left-0 mt-1 w-36 rounded-md border border-border bg-popover shadow-md opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-10 flex flex-col p-1">
-                        <button onClick={() => onUpdateVerification(item.id, "verified")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
-                          {item.verification === "verified" && <Check className="h-3 w-3 text-positive" />} Verified
+                    {onUpdateVerification ? (
+                      <div className="relative group/dropdown">
+                        <button className="flex items-center gap-2 border border-border bg-background rounded-md px-2 py-1 hover:border-primary/50 transition-colors">
+                          <AssetStatusBadge status={item.verification} />
+                          <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         </button>
-                        <button onClick={() => onUpdateVerification(item.id, "missing")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
-                          {item.verification === "missing" && <Check className="h-3 w-3 text-destructive" />} Missing
-                        </button>
-                        <button onClick={() => onUpdateVerification(item.id, "damaged")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
-                          {item.verification === "damaged" && <Check className="h-3 w-3 text-amber-500" />} Damaged
-                        </button>
+                        <div className="absolute top-full left-0 mt-1 w-36 rounded-md border border-border bg-popover shadow-md opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-10 flex flex-col p-1">
+                          <button onClick={() => onUpdateVerification(item.id, "verified")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
+                            {item.verification === "verified" && <Check className="h-3 w-3 text-positive" />} Verified
+                          </button>
+                          <button onClick={() => onUpdateVerification(item.id, "missing")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
+                            {item.verification === "missing" && <Check className="h-3 w-3 text-destructive" />} Missing
+                          </button>
+                          <button onClick={() => onUpdateVerification(item.id, "damaged")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
+                            {item.verification === "damaged" && <Check className="h-3 w-3 text-amber-500" />} Damaged
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <AssetStatusBadge status={item.verification} />
+                    )}
                   </div>
                 </td>
               </tr>
@@ -81,23 +85,27 @@ export function AuditorVerificationGrid({ items, onUpdateVerification }: Auditor
 
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status:</span>
-              <div className="relative group/dropdown">
-                <button className="flex items-center gap-2 border border-border bg-background rounded-md px-2 py-1 hover:border-primary/50 transition-colors">
-                  <AssetStatusBadge status={item.verification} />
-                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                </button>
-                <div className="absolute top-full left-0 mt-1 w-36 rounded-md border border-border bg-popover shadow-md opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-10 flex flex-col p-1">
-                  <button onClick={() => onUpdateVerification(item.id, "verified")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
-                    {item.verification === "verified" && <Check className="h-3 w-3 text-positive" />} Verified
+              {onUpdateVerification ? (
+                <div className="relative group/dropdown">
+                  <button className="flex items-center gap-2 border border-border bg-background rounded-md px-2 py-1 hover:border-primary/50 transition-colors">
+                    <AssetStatusBadge status={item.verification} />
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
                   </button>
-                  <button onClick={() => onUpdateVerification(item.id, "missing")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
-                    {item.verification === "missing" && <Check className="h-3 w-3 text-destructive" />} Missing
-                  </button>
-                  <button onClick={() => onUpdateVerification(item.id, "damaged")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
-                    {item.verification === "damaged" && <Check className="h-3 w-3 text-amber-500" />} Damaged
-                  </button>
+                  <div className="absolute top-full left-0 mt-1 w-36 rounded-md border border-border bg-popover shadow-md opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-10 flex flex-col p-1">
+                    <button onClick={() => onUpdateVerification(item.id, "verified")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
+                      {item.verification === "verified" && <Check className="h-3 w-3 text-positive" />} Verified
+                    </button>
+                    <button onClick={() => onUpdateVerification(item.id, "missing")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
+                      {item.verification === "missing" && <Check className="h-3 w-3 text-destructive" />} Missing
+                    </button>
+                    <button onClick={() => onUpdateVerification(item.id, "damaged")} className="text-left px-2 py-1.5 text-xs hover:bg-muted rounded-sm flex items-center gap-2 text-foreground">
+                      {item.verification === "damaged" && <Check className="h-3 w-3 text-amber-500" />} Damaged
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <AssetStatusBadge status={item.verification} />
+              )}
             </div>
           </div>
         ))}

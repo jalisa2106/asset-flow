@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     return fromPostgresError(error, {
-      onExclusionViolation: () => apiError('This resource is already booked for the selected time period', 409),
+      onExclusionViolation: () => NextResponse.json({ error: 'This resource is already booked for the selected time period', code: 'SLOT_CONFLICT' }, { status: 409 }),
     });
   }
 
