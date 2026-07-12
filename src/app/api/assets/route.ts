@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   if (q) query = query.textSearch('asset_tag', q, { type: 'websearch', config: 'english' });
   if (category) query = query.eq('category_id', category);
-  if (status) query = query.eq('status', status);
+  if (status) query = query.eq('status', status as any);
   if (department) query = query.eq('department_id', department);
 
   const allowedSortColumns = ['created_at', 'name', 'status', 'asset_tag'];
