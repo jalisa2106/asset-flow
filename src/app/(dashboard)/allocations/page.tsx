@@ -16,10 +16,10 @@ import {
 
 import { Button } from "@/components/ui/button";
 import {
-  allocationSchema,
-  transferRequestSchema,
-  type AllocationInput,
-  type TransferRequestInput,
+  createAllocationSchema as allocationSchema,
+  createTransferRequestSchema as transferRequestSchema,
+  type CreateAllocationInput as AllocationInput,
+  type CreateTransferRequestInput as TransferRequestInput,
 } from "@/lib/validators/allocation.schema";
 
 // --- MOCK DATA ---
