@@ -17,8 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .from('maintenance_requests')
     .update({ 
       status: 'Resolved',
-      resolved_at: new Date().toISOString(),
-      resolution_notes: parsed.data.notes
+      resolved_at: new Date().toISOString()
     })
     .eq('id', id)
     .eq('status', 'In Progress')

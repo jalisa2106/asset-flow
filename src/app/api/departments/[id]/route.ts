@@ -51,13 +51,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       
       const { data: parentData, error: parentError } = await supabase
         .from('departments')
-        .select('parent_dept_id')
+        .select('parent_department_id')
         .eq('id', currentParentId)
         .single();
         
-      if (parentError || !parentData) break;
+      if (parentError || !parentData || !parentData.parent_department_id) break;
       
-      currentParentId = parentData.parent_dept_id;
+      currentParentId = parentData.parent_department_id;
       depth++;
     }
   }
@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .update({
       ...(v.name !== undefined && { name: v.name }),
       ...(v.headEmployeeId !== undefined && { head_employee_id: v.headEmployeeId }),
-      ...(v.parentDeptId !== undefined && { parent_dept_id: v.parentDeptId }),
+      ...(v.parentDeptId !== undefined && { parent_department_id: v.parentDeptId }),
       ...(v.status !== undefined && { status: v.status }),
     })
     .eq('id', id)

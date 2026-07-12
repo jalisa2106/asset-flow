@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from('notifications')
     .update({ is_read: true })
     .eq('id', id)
-    .eq('employee_id', profile.id)
+    .eq('recipient_id', profile.id)
     .select()
     .single();
 

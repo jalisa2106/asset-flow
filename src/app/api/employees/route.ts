@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   `, { count: 'exact' });
 
   if (departmentId) query = query.eq('department_id', departmentId);
-  if (role) query = query.eq('role', role);
+  if (role) query = query.eq('role', role as any);
   if (q) query = query.ilike('full_name', `%${q}%`); 
 
   const from = (page - 1) * pageSize;

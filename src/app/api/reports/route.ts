@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     supabase.from('assets').select('*', { count: 'exact', head: true }),
     supabase.from('allocations').select('*', { count: 'exact', head: true }).eq('status', 'Active'),
     supabase.from('maintenance_requests').select('*', { count: 'exact', head: true }).in('status', ['Pending', 'In Progress', 'Approved']),
-    supabase.from('audit_cycles').select('*', { count: 'exact', head: true }).eq('status', 'In Progress'),
+    supabase.from('audit_cycles').select('*', { count: 'exact', head: true }).eq('status', 'Open'),
   ]);
 
   return NextResponse.json({

@@ -12,7 +12,7 @@ export const approveMaintenanceSchema = z.object({
 });
 
 export const assignTechnicianSchema = z.object({
-  technicianId: z.string().uuid(),
+  technicianName: z.string().min(1),
 });
 
 export const resolveMaintenanceSchema = z.object({

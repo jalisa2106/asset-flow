@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
     code: v.code,
     // @ts-ignore
     description: v.description as any,
-    status: v.status,
+    // @ts-ignore
+    status: v.status as any,
   }).select().single();
 
   if (error) return fromPostgresError(error, {

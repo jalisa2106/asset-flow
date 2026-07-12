@@ -21,17 +21,16 @@ export async function GET(req: NextRequest) {
   let query = supabase.from('maintenance_requests').select(`
     *,
     asset:assets(name, asset_tag),
-    reporter:employee_profiles!reported_by(full_name),
-    assigned:employee_profiles!assigned_to(full_name)
+    reporter:employee_profiles!raised_by(full_name)
   `, { count: 'exact' });
 
   if (status) query = query.eq('status', status as any);
-  if (reportedBy) query = query.eq('reported_by', reportedBy);
+  if (reportedBy) query = query.eq('raised_by', reportedBy);
   if (assetId) query = query.eq('asset_id', assetId);
-  if (mine === 'true' || profile.role === 'Employee') query = query.eq('reported_by', profile.id);
+  if (mine === 'true' || profile.role === 'Employee') query = query.eq('raised_by', profile.id);
 
   const from = (page - 1) * pageSize;
-  query = query.range(from, from + pageSize - 1).order('reported_at', { ascending: false });
+  query = query.range(from, from + pageSize - 1).order('created_at', { ascending: false });
 
   const { data, error, count } = await query;
   if (error) return apiError(error.message, 400);
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase.from('maintenance_requests').insert({
     asset_id: v.assetId,
-    reported_by: profile!.id,
+    raised_by: profile!.id,
     issue_description: v.issueDescription,
     priority: v.priority,
     photo_url: v.photoUrl,

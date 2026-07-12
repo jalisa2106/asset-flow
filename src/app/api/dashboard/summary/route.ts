@@ -16,7 +16,7 @@ export async function GET() {
     supabase.from('activity_log').select('id, action, entity_type, entity_id, created_at, actor_id').order('created_at', { ascending: false }).limit(8),
     supabase.from('allocations').select('*, asset:assets(name, asset_tag)').eq('employee_id', profile.id).eq('status', 'Active'),
     supabase.from('resource_bookings').select('*, asset:assets(name, asset_tag)').eq('booked_by', profile.id).in('status', ['Upcoming', 'Ongoing']),
-    supabase.from('maintenance_requests').select('*, asset:assets(name, asset_tag)').eq('reported_by', profile.id).in('status', ['Pending', 'In Progress', 'Assigned']),
+    supabase.from('maintenance_requests').select('*, asset:assets(name, asset_tag)').eq('raised_by', profile.id).in('status', ['Pending', 'In Progress', 'Technician Assigned']),
   ]);
 
   return NextResponse.json({

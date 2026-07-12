@@ -90,15 +90,6 @@ export default function DashboardPage() {
           <KpiCard title="Overdue Returns" value={String(data.kpis.overdueReturnsCount)} icon={<AlertCircle className="h-5 w-5" />} />
         </div>
 
-      <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-3">
-        <KpiCard title="Available Assets" value={data.kpis.assetsAvailable.toString()} icon={<CheckCircle2 className="h-5 w-5" />} />
-        <KpiCard title="Allocated Assets" value={data.kpis.assetsAllocated.toString()} icon={<Box className="h-5 w-5" />} />
-        <KpiCard title="Reserved Assets" value={data.kpis.assetsReserved.toString()} icon={<Clock className="h-5 w-5" />} />
-        <KpiCard title="Active Bookings" value={data.kpis.activeBookings.toString()} icon={<CalendarDays className="h-5 w-5" />} />
-        <KpiCard title="Pending Transfers" value={data.kpis.pendingTransfers.toString()} icon={<RotateCcw className="h-5 w-5" />} />
-        <KpiCard title="Overdue Returns" value={data.kpis.overdueReturnsCount.toString()} icon={<AlertTriangle className="h-5 w-5" />} />
-      </div>
-
       {data.kpis.overdueReturnsCount > 0 && (
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive flex items-start sm:items-center gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 sm:mt-0" />
@@ -163,37 +154,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div>
-        <h2 className="text-lg font-bold tracking-tight text-foreground mb-4">Recent Activity</h2>
-        <div className="rounded-xl border border-border bg-card shadow-sm">
-          <div className="divide-y divide-border">
-            {data.recentActivity.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground text-sm">No recent activity.</div>
-            ) : (
-              data.recentActivity.map((activity) => {
-                const Icon = getActionIcon(activity.action.toLowerCase());
-                const color = getActionColor(activity.action.toLowerCase());
-                
-                return (
-                  <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
-                    <div className={`mt-0.5 ${color}`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">
-                        {activity.action} - {activity.entity_type}
-                      </p>
-                    </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        )}
-
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 w-full">
           <Link href="/assets/new" className="w-full sm:w-auto">
             <Button className="w-full sm:w-auto gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md rounded-lg py-5 px-6 font-semibold">
@@ -220,20 +180,18 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-border bg-card shadow-sm">
             <div className="divide-y divide-border">
               {data.recentActivity.map((activity) => {
-                const IconComponent = getActivityIcon(activity.action);
+                const IconComponent = getActionIcon(activity.action.toLowerCase());
+                const color = getActionColor(activity.action.toLowerCase());
                 return (
                   <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
-                    <div className="mt-0.5 text-primary">
+                    <div className={`mt-0.5 ${color}`}>
                       <IconComponent className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">{formatActivityText(activity)}</p>
+                      <p className="text-sm font-medium text-foreground">{activity.action} - {activity.entity_type}</p>
                     </div>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {new Date(activity.created_at).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                      })}
+                      {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
                     </span>
                   </div>
                 );

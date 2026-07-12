@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase.from('departments').insert({
     name: v.name,
     head_employee_id: v.headEmployeeId ?? null,
-    parent_dept_id: v.parentDeptId ?? null,
+    parent_department_id: v.parentDeptId ?? null,
     status: v.status,
   }).select().single();
 

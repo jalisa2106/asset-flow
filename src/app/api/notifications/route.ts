@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const page = Number(searchParams.get('page') ?? '1');
   const pageSize = Math.min(Number(searchParams.get('pageSize') ?? '25'), MAX_PAGE_SIZE);
 
-  let query = supabase.from('notifications').select('*', { count: 'exact' }).eq('employee_id', profile.id);
+  let query = supabase.from('notifications').select('*', { count: 'exact' }).eq('recipient_id', profile.id);
 
   if (unreadOnly) {
     query = query.eq('is_read', false);

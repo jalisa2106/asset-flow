@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data, error } = await supabase
     .from('maintenance_requests')
     .update({ 
-      assigned_to: parsed.data.technicianId,
+      technician_name: parsed.data.technicianName,
       status: 'In Progress'
     })
     .eq('id', id)
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   await supabase.rpc('log_activity', {
     p_actor_id: profile!.id, p_action: 'maintenance.assigned', p_entity_type: 'maintenance', p_entity_id: id,
-    p_metadata: { assigned_to: parsed.data.technicianId },
+    p_metadata: { assigned_to: parsed.data.technicianName },
   });
 
   return NextResponse.json({ data });

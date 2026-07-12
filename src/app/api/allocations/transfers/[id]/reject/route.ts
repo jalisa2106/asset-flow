@@ -12,8 +12,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from('transfer_requests')
     .update({ 
       status: 'Rejected', 
-      approved_by: profile!.id,
-      approved_at: new Date().toISOString()
+      approved_by: profile!.id
     })
     .eq('id', id)
     .eq('status', 'Requested')
