@@ -70,7 +70,7 @@ export function BookingCalendar({ dateStr, bookings, attemptedSlot }: BookingCal
               key={booking.id}
               onClick={() => setActiveSlotId(booking.id)}
               className={cn(
-                "absolute left-0 right-12 rounded-md bg-booking-conflict-overlaygit  border border-primary/20 p-2 overflow-hidden shadow-sm flex flex-col justify-center transition-all hover:ring-2 hover:ring-primary/40 cursor-pointer",
+                "absolute left-0 right-12 rounded-md bg-[#d9ecff] border border-primary/20 p-2 overflow-hidden shadow-sm flex flex-col justify-center transition-all hover:ring-2 hover:ring-primary/40 cursor-pointer",
                 activeSlotId === booking.id ? "z-30 shadow-md ring-2 ring-primary/40" : "z-10"
               )}
               style={{
