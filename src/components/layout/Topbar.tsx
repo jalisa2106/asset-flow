@@ -1,16 +1,27 @@
 "use client";
 
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Menu } from "lucide-react";
+import { useUiStore } from "@/store/uiStore";
 
 export function Topbar() {
+  const { toggleSidebar } = useUiStore();
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-md">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-4 sm:px-6 backdrop-blur-md">
       <div className="flex items-center flex-1 gap-4">
-        <div className="relative w-96">
+        {/* Toggle menu button on mobile/tablet */}
+        <button 
+          onClick={toggleSidebar}
+          className="p-2 -ml-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground lg:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <div className="relative w-full max-w-xs sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input 
             type="text" 
-            placeholder="Search assets, users, or locations..." 
+            placeholder="Search assets, users..." 
             className="w-full rounded-full border border-input bg-muted/50 py-2 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
           />
         </div>
