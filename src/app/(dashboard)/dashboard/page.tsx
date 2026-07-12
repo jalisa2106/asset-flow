@@ -14,15 +14,19 @@ const RECENT_ACTIVITY = [
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground font-serif">Today's Overview</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Welcome back, John. Here's what's happening today.</p>
+    <>
+      <div className="fixed top-16 left-0 lg:left-64 right-0 z-20 bg-background px-4 md:px-6 lg:px-8 py-4 md:py-5">
+        <div className="mx-auto max-w-6xl flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-serif">Today's Overview</h1>
+            <p className="text-muted-foreground mt-1 text-xs md:text-sm">Welcome back, John. Here's what's happening today.</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="pt-24 md:pt-28 space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-3">
         <KpiCard title="Available Assets" value="1,204" icon={<CheckCircle2 className="h-5 w-5" />} />
         <KpiCard title="Allocated Assets" value="482" icon={<Box className="h-5 w-5" />} />
         <KpiCard title="Reserved Assets" value="29" icon={<Clock className="h-5 w-5" />} />
@@ -31,27 +35,27 @@ export default function DashboardPage() {
         <KpiCard title="Upcoming Returns" value="12" icon={<RotateCcw className="h-5 w-5" />} />
       </div>
 
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200 flex items-center gap-3 animate-pulse">
-        <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
-        <span className="text-sm font-semibold">3 assets overdue for return — flagged for follow-up</span>
+      <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive flex items-start sm:items-center gap-3">
+        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 sm:mt-0" />
+        <span className="text-sm font-medium">3 assets overdue for return — flagged for follow-up</span>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <Link href="/assets/new">
-          <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md rounded-lg py-5 px-6">
-            <Plus className="h-4 w-4" />
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 w-full">
+        <Link href="/assets/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md rounded-lg py-5 px-6">
+            <Plus className="h-4 w-4 shrink-0" />
             Register asset
           </Button>
         </Link>
-        <Link href="/bookings/new">
-          <Button variant="outline" className="gap-2 bg-card hover:bg-muted text-foreground border-border shadow-sm rounded-lg py-5 px-6">
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+        <Link href="/bookings/new" className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto gap-2 bg-card hover:bg-muted text-foreground border-border shadow-sm rounded-lg py-5 px-6">
+            <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
             Book resource
           </Button>
         </Link>
-        <Link href="/maintenance/new">
-          <Button variant="outline" className="gap-2 bg-card hover:bg-muted text-foreground border-border shadow-sm rounded-lg py-5 px-6">
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        <Link href="/maintenance/new" className="w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto gap-2 bg-card hover:bg-muted text-foreground border-border shadow-sm rounded-lg py-5 px-6">
+            <AlertCircle className="h-4 w-4 text-muted-foreground shrink-0" />
             Raise request
           </Button>
         </Link>
@@ -80,6 +84,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

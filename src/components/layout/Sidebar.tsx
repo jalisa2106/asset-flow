@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";
+import { useEffect } from "react";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -23,23 +24,28 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isSidebarOpen, closeSidebar } = useUiStore();
+  const { isMobileSidebarOpen, closeMobileSidebar } = useUiStore();
+
+  // Close sidebar on route change for mobile
+  useEffect(() => {
+    closeMobileSidebar();
+  }, [pathname, closeMobileSidebar]);
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {isSidebarOpen && (
+      {/* Mobile overlay */}
+      {isMobileSidebarOpen && (
         <div 
-          onClick={closeSidebar} 
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden transition-all duration-300"
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+          onClick={closeMobileSidebar}
         />
       )}
 
-      {/* Sidebar drawer */}
+      {/* Sidebar */}
       <div 
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-border bg-sidebar px-4 py-6 transition-transform duration-300 ease-in-out lg:translate-x-0",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="mb-8 flex items-center justify-between px-2">
@@ -49,10 +55,9 @@ export function Sidebar() {
             </div>
             <span className="text-xl font-bold text-foreground">Asset<span className="text-primary">Flow</span></span>
           </div>
-          {/* Close button on mobile */}
           <button 
-            onClick={closeSidebar}
-            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground lg:hidden"
+            className="p-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+            onClick={closeMobileSidebar}
           >
             <X className="h-5 w-5" />
           </button>
@@ -95,6 +100,7 @@ export function Sidebar() {
           </div>
         </div>
       </div>
+    </div>
     </>
   );
 }
