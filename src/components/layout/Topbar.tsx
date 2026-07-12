@@ -18,7 +18,7 @@ export function Topbar() {
       <div className="flex items-center gap-4">
         <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>
         </button>
       </div>
     </header>
