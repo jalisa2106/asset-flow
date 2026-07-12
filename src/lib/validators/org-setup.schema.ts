@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const departmentSchema = z.object({
   name: z.string().min(2, "Department name must be at least 2 characters"),
-  head: z.string().min(2, "Department head name must be at least 2 characters"),
-  parentDeptId: z.string().optional(),
+  headEmployeeId: z.string().uuid().optional(),
+  parentDeptId: z.string().uuid().optional(),
   status: z.enum(["Active", "Inactive"]),
 });
 

@@ -1,1 +1,46 @@
-import { NextResponse } from 'next/server'; export async function GET() { return NextResponse.json({ status: 'not implemented' }); } export async function PATCH() { return NextResponse.json({ status: 'not implemented' }); }
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentProfile } from '@/lib/auth-context';
+import { can } from '@/lib/permissions';
+import { verifyAuditItemSchema } from '@/lib/validators/audit.schema';
+import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { supabase, profile } = await getCurrentProfile();
+
+  const parsed = verifyAuditItemSchema.safeParse(await req.json());
+  if (!parsed.success) return apiError(parsed.error.message, 400);
+  const v = parsed.data;
+
+  const { data: cycle, error: cycleError } = await supabase
+    .from('audit_cycles')
+    .select('assigned_auditors, status')
+    .eq('id', id)
+    .single();
+
+  if (cycleError || !cycle) return apiError('Audit cycle not found', 404);
+  if (cycle.status !== 'In Progress') return apiError('Audit cycle is not active', 400);
+  if (!can.verifyAuditItem(profile, cycle.assigned_auditors)) return unauthorized();
+
+  const { data, error } = await supabase
+    .from('audit_items')
+    .update({ 
+      verification: v.verification,
+      notes: v.notes,
+      verified_by: profile!.id,
+      verified_at: new Date().toISOString()
+    })
+    .eq('cycle_id', id)
+    .eq('asset_id', v.assetId)
+    .select()
+    .single();
+
+  if (error) return fromPostgresError(error);
+
+  await supabase.rpc('log_activity', {
+    p_actor_id: profile!.id, p_action: 'audit.verified', p_entity_type: 'audit_cycle', p_entity_id: id,
+    p_metadata: { asset_id: v.assetId, verification: v.verification },
+  });
+
+  return NextResponse.json({ data });
+}

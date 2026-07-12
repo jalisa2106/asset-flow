@@ -1,1 +1,31 @@
-import { NextResponse } from 'next/server'; export async function GET() { return NextResponse.json({ status: 'not implemented' }); } export async function PATCH() { return NextResponse.json({ status: 'not implemented' }); }
+import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentProfile } from '@/lib/auth-context';
+import { can } from '@/lib/permissions';
+import { approveMaintenanceSchema } from '@/lib/validators/maintenance.schema';
+import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { supabase, profile } = await getCurrentProfile();
+  if (!can.approveMaintenance(profile)) return unauthorized();
+
+  const parsed = approveMaintenanceSchema.safeParse(await req.json());
+  if (!parsed.success) return apiError(parsed.error.message, 400);
+
+  const { data, error } = await supabase
+    .from('maintenance_requests')
+    .update({ status: parsed.data.decision })
+    .eq('id', id)
+    .eq('status', 'Pending')
+    .select()
+    .single();
+
+  if (error) return fromPostgresError(error);
+
+  await supabase.rpc('log_activity', {
+    p_actor_id: profile!.id, p_action: `maintenance.${parsed.data.decision.toLowerCase()}`, p_entity_type: 'maintenance', p_entity_id: id,
+    p_metadata: { decision: parsed.data.decision },
+  });
+
+  return NextResponse.json({ data });
+}
