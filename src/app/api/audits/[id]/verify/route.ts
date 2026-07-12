@@ -14,13 +14,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: cycle, error: cycleError } = await supabase
     .from('audit_cycles')
-    .select('assigned_auditors, status')
+    .select(`status, audit_cycle_auditors(employee_id)`)
     .eq('id', id)
     .single();
 
   if (cycleError || !cycle) return apiError('Audit cycle not found', 404);
-  if (cycle.status !== 'In Progress') return apiError('Audit cycle is not active', 400);
-  if (!can.verifyAuditItem(profile, cycle.assigned_auditors)) return unauthorized();
+  if (cycle.status !== 'Open') return apiError('Audit cycle is not active', 400);
+
+  const assignedAuditors = cycle.audit_cycle_auditors.map((a: any) => a.employee_id);
+  if (!can.verifyAuditItem(profile, assignedAuditors)) return unauthorized();
 
   const { data, error } = await supabase
     .from('audit_items')
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       verified_by: profile!.id,
       verified_at: new Date().toISOString()
     })
-    .eq('cycle_id', id)
+    .eq('audit_cycle_id', id)
     .eq('asset_id', v.assetId)
     .select()
     .single();
