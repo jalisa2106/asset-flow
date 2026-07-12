@@ -31,9 +31,9 @@ export default function DashboardPage() {
         <KpiCard title="Upcoming Returns" value="12" icon={<RotateCcw className="h-5 w-5" />} />
       </div>
 
-      <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive flex items-center gap-3">
-        <AlertTriangle className="h-5 w-5 shrink-0" />
-        <span className="text-sm font-medium">3 assets overdue for return — flagged for follow-up</span>
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900/50 dark:bg-red-950/25 dark:text-red-200 flex items-center gap-3 animate-pulse">
+        <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+        <span className="text-sm font-semibold">3 assets overdue for return — flagged for follow-up</span>
       </div>
 
       <div className="flex flex-wrap gap-4">
