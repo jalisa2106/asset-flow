@@ -70,7 +70,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={closeSidebar}
+                onClick={closeMobileSidebar}
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive 
@@ -100,7 +100,6 @@ export function Sidebar() {
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 }
