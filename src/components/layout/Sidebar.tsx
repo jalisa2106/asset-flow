@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/uiStore";
 import { useEffect } from "react";
+import { LogoutButton } from "./LogoutButton";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -94,9 +95,7 @@ export function Sidebar() {
               <span className="text-sm font-medium text-foreground leading-none">John Doe</span>
               <span className="text-xs text-muted-foreground mt-1">Employee</span>
             </div>
-            <button className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
-              <LogOut className="h-5 w-5" />
-            </button>
+            <LogoutButton />
           </div>
         </div>
       </div>

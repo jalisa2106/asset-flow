@@ -461,6 +461,30 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          success: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+        }
+        Relationships: []
+      }
       maintenance_requests: {
         Row: {
           approved_by: string | null
@@ -741,6 +765,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      is_login_locked_out: { Args: { p_email: string }; Returns: boolean }
       log_activity: {
         Args: {
           p_action: string

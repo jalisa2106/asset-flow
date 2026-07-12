@@ -2,26 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
+const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const parsed = loginSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid email or password format' }, { status: 400 });
-  }
+  const parsed = loginSchema.safeParse(await req.json());
+  if (!parsed.success) return NextResponse.json({ error: 'Invalid email or password format' }, { status: 400 });
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
+
+  const { data: lockedOut } = await supabase.rpc('is_login_locked_out', { p_email: parsed.data.email });
+  if (lockedOut) {
+    return NextResponse.json(
+      { error: 'Too many failed attempts. Try again in 15 minutes.' },
+      { status: 429 }
+    );
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+
+  await supabase.from('login_attempts').insert({
     email: parsed.data.email,
-    password: parsed.data.password,
+    ip_address: ip,
+    success: !error,
   });
 
   if (error) {
-    // Deliberately vague message — don't reveal whether the email exists (avoids user enumeration).
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
   }
 
@@ -36,7 +42,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'This account has been deactivated' }, { status: 403 });
   }
 
-  // Cookies (JWT/session) are already set by the server client. Return only the
-  // non-sensitive profile fields the frontend will cache in localStorage.
   return NextResponse.json({ profile });
 }
