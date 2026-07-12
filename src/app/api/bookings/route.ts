@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     *,
     asset:assets(name, asset_tag),
     employee:employee_profiles!booked_by(full_name),
-    department:departments(name)
+    department:departments!booked_for_department_id(name)
   `, { count: 'exact' });
 
   if (status) query = query.eq('status', status as any);
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase.from('resource_bookings').insert({
     resource_asset_id: v.resourceAssetId,
     booked_by: profile!.id,
-    booked_for_department_id: v.bookedForDepartmentId ?? null,
-    starts_at: v.startsAt,
-    ends_at: v.endsAt,
+    booked_for_department_id: (v.bookedForDepartmentId && v.bookedForDepartmentId !== '') ? v.bookedForDepartmentId : null,
+    starts_at: new Date(v.startsAt).toISOString(),
+    ends_at: new Date(v.endsAt).toISOString(),
   }).select().single();
 
   if (error) {

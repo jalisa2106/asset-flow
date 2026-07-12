@@ -12,8 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     .from('departments')
     .select(`
       *,
-      head:employee_profiles!head_employee_id(full_name),
-      parent:departments!parent_dept_id(name)
+      head:employee_profiles!head_employee_id(full_name)
     `)
     .eq('id', id)
     .single();

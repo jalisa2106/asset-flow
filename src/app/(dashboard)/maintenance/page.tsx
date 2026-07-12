@@ -1,104 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { 
-  Plus, 
-  X, 
-  AlertCircle, 
-  ArrowRight, 
-  CheckCircle2, 
-  Clock 
+import {
+  Plus,
+  X,
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Loader2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  createMaintenanceSchema,
-} from "@/lib/validators/maintenance.schema";
+import { apiFetch } from "@/lib/apiFetch";
+import { createMaintenanceSchema } from "@/lib/validators/maintenance.schema";
+
+type MaintenanceFormValues = z.input<typeof createMaintenanceSchema>;
 
 // --- TYPES ---
 interface MaintenanceRequest {
   id: string;
-  assetTag: string;
-  assetName: string;
-  title: string;
-  description: string;
+  asset_id: string;
+  issue_description: string;
   priority: "Low" | "Medium" | "High" | "Critical";
-  status: "Pending" | "Approved" | "Technician Assigned" | "In Progress" | "Resolved";
-  technician?: string;
-  updatedAt: string;
+  status: "Pending" | "Approved" | "Rejected" | "In Progress" | "Resolved";
+  technician_name?: string | null;
+  updated_at: string;
+  created_at: string;
+  asset?: { name: string; asset_tag: string } | null;
+  reporter?: { full_name: string } | null;
 }
 
-// --- MOCK INITIAL STATE ---
-const INITIAL_REQUESTS: MaintenanceRequest[] = [
-  {
-    id: "req-1",
-    assetTag: "AF-0062",
-    assetName: "Epson Projector B1",
-    title: "Bulb not turning on",
-    description: "The main projection bulb fails to ignite. Status red indicator flashing.",
-    priority: "High",
-    status: "Pending",
-    updatedAt: "12 Jul 2026",
-  },
-  {
-    id: "req-2",
-    assetTag: "AF-0114",
-    assetName: "Dell Laptop Latitude 5420",
-    title: "Battery swollen",
-    description: "The bottom chassis is expanding due to swollen lithium pouch.",
-    priority: "Critical",
-    status: "Approved",
-    updatedAt: "11 Jul 2026",
-  },
-  {
-    id: "req-3",
-    assetTag: "AF-0033",
-    assetName: "Herman Miller Aeron Chair",
-    title: "Hydraulic cylinder sinking",
-    description: "The pneumatic lift cylinder slowly sinks when sitting down.",
-    priority: "Medium",
-    status: "Technician Assigned",
-    technician: "Alex Mercer",
-    updatedAt: "10 Jul 2026",
-  },
-  {
-    id: "req-4",
-    assetTag: "AF-0891",
-    assetName: "Logitech MX Mouse",
-    title: "Left click double clicking",
-    description: "Left button microswitch is bouncing and register double clicks.",
-    priority: "Low",
-    status: "In Progress",
-    technician: "Alex Mercer",
-    updatedAt: "09 Jul 2026",
-  },
-  {
-    id: "req-5",
-    assetTag: "AF-873",
-    assetName: "Conference Desk C",
-    title: "Chair leg repair",
-    description: "Support bracket on leg re-welded.",
-    priority: "Medium",
-    status: "Resolved",
-    technician: "Sam Patel",
-    updatedAt: "07 Jul 2026",
-  },
-];
-
-const MOCK_ASSETS = [
-  { id: "8816c873-10d9-482a-bc91-9e767ebdb15a", tag: "AF-0062", name: "Epson Projector B1" },
-  { id: "7716c873-10d9-482a-bc91-9e767ebdb15b", tag: "AF-0114", name: "Dell Laptop Latitude 5420" },
-  { id: "6616c873-10d9-482a-bc91-9e767ebdb15c", tag: "AF-0033", name: "Herman Miller Aeron Chair" },
-  { id: "5516c873-10d9-482a-bc91-9e767ebdb15d", tag: "AF-0891", name: "Logitech MX Mouse" },
-];
+interface AssetItem {
+  id: string;
+  asset_tag: string;
+  name: string;
+}
 
 export default function MaintenancePage() {
-  const [requests, setRequests] = useState<MaintenanceRequest[]>(INITIAL_REQUESTS);
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+  const [assets, setAssets] = useState<AssetItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [assignModal, setAssignModal] = useState<{ isOpen: boolean; request: MaintenanceRequest | null }>({ isOpen: false, request: null });
+  const [technicianName, setTechnicianName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // --- DATA FETCHING ---
+  const fetchRequests = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch("/api/maintenance?pageSize=50");
+      if (!res.ok) throw new Error("Failed to load maintenance requests.");
+      const json = await res.json();
+      setRequests(json.data || []);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load maintenance data.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchAssets = useCallback(async () => {
+    try {
+      const res = await apiFetch("/api/assets?pageSize=100");
+      const json = await res.json();
+      setAssets(json.data || []);
+    } catch {
+      // silent — assets loaded for the modal
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRequests();
+    fetchAssets();
+  }, [fetchRequests, fetchAssets]);
 
   // Form setup
   const {
@@ -106,81 +86,105 @@ export default function MaintenancePage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<z.input<typeof createMaintenanceSchema>>({
+  } = useForm<MaintenanceFormValues>({
     resolver: zodResolver(createMaintenanceSchema),
     defaultValues: { assetId: "", issueDescription: "", priority: "Medium" },
   });
 
-  const onSubmit = (data: z.input<typeof createMaintenanceSchema>) => {
-    const selectedAsset = MOCK_ASSETS.find((a) => a.id === data.assetId);
-    if (!selectedAsset) return;
+  const onSubmit = async (data: MaintenanceFormValues) => {
+    setSubmitting(true);
+    try {
+      const res = await apiFetch("/api/maintenance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to submit maintenance request.");
 
-    const newRequest: MaintenanceRequest = {
-      // eslint-disable-next-line react-hooks/purity
-      id: `req-${Date.now()}`,
-      assetTag: selectedAsset.tag,
-      assetName: selectedAsset.name,
-      title: data.issueDescription.split(" ").slice(0, 4).join(" ") + "...",
-      description: data.issueDescription,
-      priority: data.priority || "Medium",
-      status: "Pending",
-      updatedAt: new Date().toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-    };
-
-    setRequests([newRequest, ...requests]);
-    toast.success(`Maintenance request for "${selectedAsset.name}" submitted!`);
-    reset();
-    setIsAddModalOpen(false);
+      const assetName = assets.find((a) => a.id === data.assetId)?.name || "asset";
+      toast.success(`Maintenance request for "${assetName}" submitted!`);
+      reset();
+      setIsAddModalOpen(false);
+      fetchRequests();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // Helper to update request status (workflow transition)
-  const advanceStatus = (reqId: string, currentStatus: MaintenanceRequest["status"]) => {
-    let nextStatus: MaintenanceRequest["status"] = currentStatus;
-    let toastMsg = "";
-
-    if (currentStatus === "Pending") {
-      nextStatus = "Approved";
-      toastMsg = "Request approved! Asset status flipped to [Under Maintenance].";
-    } else if (currentStatus === "Approved") {
-      nextStatus = "Technician Assigned";
-      toastMsg = "Technician Alex Mercer assigned to task.";
-    } else if (currentStatus === "Technician Assigned") {
-      nextStatus = "In Progress";
-      toastMsg = "Repair work initiated.";
-    } else if (currentStatus === "In Progress") {
-      nextStatus = "Resolved";
-      toastMsg = "Repair resolved successfully! Asset status reverted to [Available].";
+  // Advance workflow status
+  const advanceStatus = async (req: MaintenanceRequest) => {
+    if (req.status === "Approved") {
+      setAssignModal({ isOpen: true, request: req });
+      return;
     }
 
-    setRequests(
-      requests.map((req) =>
-        req.id === reqId
-          ? {
-              ...req,
-              status: nextStatus,
-              technician: nextStatus === "Technician Assigned" ? "Alex Mercer" : req.technician,
-              updatedAt: new Date().toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              }),
-            }
-          : req
-      )
-    );
+    setSubmitting(true);
+    try {
+      let endpoint = "";
+      let body: Record<string, any> = {};
+      let expectedNextStatus = "";
 
-    toast.success(toastMsg);
+      if (req.status === "Pending") {
+        endpoint = `/api/maintenance/${req.id}/approve`;
+        body = { decision: "Approved" };
+        expectedNextStatus = "Approved";
+      } else if (req.status === "In Progress") {
+        endpoint = `/api/maintenance/${req.id}/resolve`;
+        body = { notes: "Repair completed successfully." };
+        expectedNextStatus = "Resolved";
+      } else {
+        return;
+      }
+
+      const res = await apiFetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to advance status.");
+
+      toast.success(`Request moved to ${expectedNextStatus}.`);
+      fetchRequests();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAssignTechnician = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assignModal.request || !technicianName.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const res = await apiFetch(`/api/maintenance/${assignModal.request.id}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ technicianName: technicianName.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to assign technician.");
+
+      toast.success("Technician assigned and request moved to In Progress.");
+      setAssignModal({ isOpen: false, request: null });
+      setTechnicianName("");
+      fetchRequests();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Group columns
   const columns: { title: MaintenanceRequest["status"]; color: string }[] = [
     { title: "Pending", color: "bg-slate-100 dark:bg-slate-800" },
     { title: "Approved", color: "bg-blue-50/50 dark:bg-blue-950/15" },
-    { title: "Technician Assigned", color: "bg-purple-50/50 dark:bg-purple-950/15" },
     { title: "In Progress", color: "bg-amber-50/50 dark:bg-amber-950/15" },
     { title: "Resolved", color: "bg-emerald-50/50 dark:bg-emerald-950/15" },
   ];
@@ -203,111 +207,123 @@ export default function MaintenancePage() {
         </Button>
       </div>
 
-      {/* Kanban Board Container (Scrollable on smaller viewports) */}
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-border">
-        {columns.map((col) => {
-          const colRequests = requests.filter((req) => req.status === col.title);
-          return (
-            <div 
-              key={col.title} 
-              className={`flex-shrink-0 w-80 rounded-2xl border border-border p-4 flex flex-col min-h-[480px] ${col.color}`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-foreground">{col.title}</h3>
-                <span className="rounded-full bg-background border border-border px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-                  {colRequests.length}
-                </span>
-              </div>
+      {loading ? (
+        <div className="flex h-48 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
+          {/* Kanban Board */}
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-border">
+            {columns.map((col) => {
+              const colRequests = requests.filter((req) => req.status === col.title);
+              return (
+                <div
+                  key={col.title}
+                  className={`flex-shrink-0 w-80 rounded-2xl border border-border p-4 flex flex-col min-h-[480px] ${col.color}`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-foreground">{col.title}</h3>
+                    <span className="rounded-full bg-background border border-border px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                      {colRequests.length}
+                    </span>
+                  </div>
 
-              <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px] pr-1">
-                {colRequests.map((req) => (
-                  <div 
-                    key={req.id} 
-                    className={`rounded-xl border border-border bg-card p-4 shadow-sm space-y-3 transition-all hover:shadow-md ${
-                      req.status === "Resolved" 
-                        ? "border-emerald-200 dark:border-emerald-900 bg-emerald-500/5" 
-                        : ""
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-mono text-xs font-semibold text-primary">{req.assetTag}</span>
-                        <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                          req.priority === "Critical"
-                            ? "bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400"
-                            : req.priority === "High"
-                            ? "bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400"
-                            : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400"
-                        }`}>
-                          {req.priority}
-                        </span>
+                  <div className="flex-1 space-y-3 overflow-y-auto max-h-[500px] pr-1">
+                    {colRequests.map((req) => (
+                      <div
+                        key={req.id}
+                        className={`rounded-xl border border-border bg-card p-4 shadow-sm space-y-3 transition-all hover:shadow-md ${
+                          req.status === "Resolved"
+                            ? "border-emerald-200 dark:border-emerald-900 bg-emerald-500/5"
+                            : ""
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-mono text-xs font-semibold text-primary">
+                              {req.asset?.asset_tag || "—"}
+                            </span>
+                            <span className={`px-1.5 rounded text-[10px] font-bold ${
+                              req.priority === "Critical"
+                                ? "bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400"
+                                : req.priority === "High"
+                                ? "bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400"
+                                : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400"
+                            }`}>
+                              {req.priority}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-sm text-foreground">{req.asset?.name || "Unknown Asset"}</h4>
+                          <p className="text-xs text-muted-foreground font-semibold mt-0.5 line-clamp-1">
+                            {req.issue_description}
+                          </p>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground line-clamp-2">{req.issue_description}</p>
+
+                        {req.technician_name && (
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-semibold">
+                            <Clock className="h-3.5 w-3.5" />
+                            <span>Tech: {req.technician_name}</span>
+                          </div>
+                        )}
+
+                        {/* Progress action button */}
+                        {req.status !== "Resolved" && req.status !== "Rejected" && (
+                          <div className="pt-2 border-t border-border flex justify-end">
+                            <Button
+                              onClick={() => advanceStatus(req)}
+                              disabled={submitting}
+                              size="xs"
+                              variant="outline"
+                              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold flex items-center gap-1 py-3"
+                            >
+                              <span>
+                                {req.status === "Pending" && "Approve"}
+                                {req.status === "Approved" && "Assign & Start"}
+                                {req.status === "In Progress" && "Resolve"}
+                              </span>
+                              <ArrowRight className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+
+                        {req.status === "Resolved" && (
+                          <div className="pt-2 border-t border-emerald-200/50 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Resolved — {new Date(req.updated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                          </div>
+                        )}
                       </div>
-                      <h4 className="font-bold text-sm text-foreground">{req.assetName}</h4>
-                      <p className="text-xs text-muted-foreground font-semibold mt-0.5">{req.title}</p>
-                    </div>
+                    ))}
 
-                    <p className="text-xs text-muted-foreground line-clamp-2">{req.description}</p>
-
-                    {req.technician && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-semibold">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>Tech: {req.technician}</span>
-                      </div>
-                    )}
-
-                    {/* Progress action button */}
-                    {req.status !== "Resolved" && (
-                      <div className="pt-2 border-t border-border flex justify-end">
-                        <Button
-                          onClick={() => advanceStatus(req.id, req.status)}
-                          size="xs"
-                          variant="outline"
-                          className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold flex items-center gap-1 py-3"
-                        >
-                          <span>
-                            {req.status === "Pending" && "Approve"}
-                            {req.status === "Approved" && "Assign Tech"}
-                            {req.status === "Technician Assigned" && "Start Work"}
-                            {req.status === "In Progress" && "Resolve"}
-                          </span>
-                          <ArrowRight className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    )}
-
-                    {req.status === "Resolved" && (
-                      <div className="pt-2 border-t border-emerald-200/50 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>Resolved — {req.updatedAt}</span>
+                    {colRequests.length === 0 && (
+                      <div className="h-full flex items-center justify-center border border-dashed border-border rounded-xl p-8 text-center text-xs text-muted-foreground">
+                        No requests in this stage
                       </div>
                     )}
                   </div>
-                ))}
+                </div>
+              );
+            })}
+          </div>
 
-                {colRequests.length === 0 && (
-                  <div className="h-full flex items-center justify-center border border-dashed border-border rounded-xl p-8 text-center text-xs text-muted-foreground">
-                    No requests in this stage
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Kanban Info Footer */}
-      <div className="rounded-xl border border-blue-500/10 bg-blue-500/5 p-4 text-xs text-muted-foreground flex items-start gap-2.5 max-w-3xl">
-        <AlertCircle className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-        <span>
-          <strong>Product Constraint Rule 5</strong>: Raising a maintenance request holds the asset in its current status. Approving the request advances the asset state to <strong>Under Maintenance</strong>, and Resolving the request flips it back to <strong>Available</strong> automatically.
-        </span>
-      </div>
+          {/* Footer info */}
+          <div className="rounded-xl border border-blue-500/10 bg-blue-500/5 p-4 text-xs text-muted-foreground flex items-start gap-2.5 max-w-3xl">
+            <AlertCircle className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+            <span>
+              <strong>Product Constraint Rule 5</strong>: Raising a maintenance request holds the asset in its current status. Approving the request advances the asset state to <strong>Under Maintenance</strong>, and Resolving the request flips it back to <strong>Available</strong> automatically.
+            </span>
+          </div>
+        </>
+      )}
 
       {/* --- ADD REQUEST MODAL --- */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden p-6 relative animate-in fade-in zoom-in-95 duration-200">
-            <button 
+            <button
               onClick={() => {
                 setIsAddModalOpen(false);
                 reset();
@@ -327,8 +343,8 @@ export default function MaintenancePage() {
                   {...register("assetId")}
                 >
                   <option value="">-- Choose Asset --</option>
-                  {MOCK_ASSETS.map((a) => (
-                    <option key={a.id} value={a.id}>{a.tag} — {a.name}</option>
+                  {assets.map((a) => (
+                    <option key={a.id} value={a.id}>{a.asset_tag} — {a.name}</option>
                   ))}
                 </select>
                 {errors.assetId && (
@@ -364,7 +380,52 @@ export default function MaintenancePage() {
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-primary text-primary-foreground font-semibold">Submit Request</Button>
+                <Button type="submit" disabled={submitting} className="bg-primary text-primary-foreground font-semibold">
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Request"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- ASSIGN TECHNICIAN MODAL --- */}
+      {assignModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-2xl overflow-hidden p-6 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => {
+                setAssignModal({ isOpen: false, request: null });
+                setTechnicianName("");
+              }}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-1">Assign Technician</h2>
+            <p className="text-xs text-muted-foreground mb-4">Assign a technician to start the maintenance work.</p>
+
+            <form onSubmit={handleAssignTechnician} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground/80">Technician Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={technicianName}
+                  onChange={(e) => setTechnicianName(e.target.value)}
+                  className="block w-full rounded-lg border border-input bg-background py-2.5 px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button type="button" variant="outline" onClick={() => {
+                  setAssignModal({ isOpen: false, request: null });
+                  setTechnicianName("");
+                }}>Cancel</Button>
+                <Button type="submit" disabled={submitting || !technicianName.trim()} className="bg-primary text-primary-foreground font-semibold">
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Assign & Start"}
+                </Button>
               </div>
             </form>
           </div>

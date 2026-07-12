@@ -13,11 +13,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ asse
     .select(`
       *,
       category:asset_categories(name),
-      department:departments(name),
+      department:departments!department_id(name),
       allocations!allocations_asset_id_fkey(
         id, employee_id, department_id, expected_return_date,
-        employee_profiles(full_name),
-        departments(name)
+        employee_profiles!employee_id(full_name),
+        departments!department_id(name)
       )
     `)
     .eq('id', assetId)

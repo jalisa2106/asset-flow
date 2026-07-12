@@ -16,8 +16,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase.from('audit_cycles').select(`
     *,
-    department:departments(name),
-    created_by_profile:employee_profiles!created_by(full_name)
+    department:departments!scope_department_id(name)
   `, { count: 'exact' });
 
   if (status) query = query.eq('status', status as any);

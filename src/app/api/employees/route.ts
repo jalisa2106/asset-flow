@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase.from('employee_profiles').select(`
     *,
-    department:departments(name)
+    department:departments!department_id(name)
   `, { count: 'exact' });
 
   if (departmentId) query = query.eq('department_id', departmentId);

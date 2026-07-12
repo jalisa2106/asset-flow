@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await supabase.from('assets').select(`
       *,
       category:asset_categories(name),
-      department:departments(name)
+      department:departments!department_id(name)
     `).order('created_at', { ascending: false });
     
     if (error) return apiError(error.message, 400);
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       *,
       asset:assets(name, asset_tag),
       employee:employee_profiles!employee_id(full_name),
-      department:departments(name)
+      department:departments!department_id(name)
     `).order('allocated_at', { ascending: false });
     
     if (error) return apiError(error.message, 400);

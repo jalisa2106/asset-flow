@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status');
   const employeeId = searchParams.get('employeeId');
   const departmentId = searchParams.get('departmentId');
+  const assetId = searchParams.get('assetId');
   const mine = searchParams.get('mine');
   const page = Number(searchParams.get('page') ?? '1');
   const pageSize = Math.min(Number(searchParams.get('pageSize') ?? '25'), MAX_PAGE_SIZE);
@@ -22,12 +23,13 @@ export async function GET(req: NextRequest) {
     *,
     asset:assets(name, asset_tag),
     employee:employee_profiles!employee_id(full_name),
-    department:departments(name)
+    department:departments!department_id(name)
   `, { count: 'exact' });
 
   if (status) query = query.eq('status', status as any);
   if (employeeId) query = query.eq('employee_id', employeeId);
   if (departmentId) query = query.eq('department_id', departmentId);
+  if (assetId) query = query.eq('asset_id', assetId);
   if (mine === 'true' || profile.role === 'Employee') query = query.eq('employee_id', profile.id);
 
   const from = (page - 1) * pageSize;

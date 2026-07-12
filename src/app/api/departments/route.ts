@@ -9,8 +9,7 @@ export async function GET(_req: NextRequest) {
   const supabase = await createClient();
   const { data, error } = await supabase.from('departments').select(`
     *,
-    head:employee_profiles!head_employee_id(full_name),
-    parent:departments!parent_dept_id(name)
+    head:employee_profiles!head_employee_id(full_name)
   `).order('name');
   if (error) return apiError(error.message, 400);
   return NextResponse.json({ data });
