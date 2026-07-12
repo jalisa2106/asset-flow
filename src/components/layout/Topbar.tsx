@@ -19,7 +19,7 @@ export function Topbar() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input 
             type="text" 
-            placeholder="Search assets, users, or locations..." 
+            placeholder="Search assets, users..." 
             className="w-full rounded-full border border-input bg-muted/50 py-2 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
           />
         </div>
@@ -30,7 +30,7 @@ export function Topbar() {
         </button>
         <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>
         </button>
       </div>
     </header>

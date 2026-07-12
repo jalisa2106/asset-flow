@@ -63,39 +63,41 @@ export function Sidebar() {
           </button>
         </div>
 
-      <nav className="flex-1 space-y-1">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <item.icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
+        <nav className="flex-1 space-y-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={closeSidebar}
+                className={cn(
+                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive 
+                    ? "bg-primary text-primary-foreground shadow-sm" 
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <item.icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
 
-      <div className="mt-auto border-t border-border pt-4">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-            JD
+        <div className="mt-auto border-t border-border pt-4">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+              JD
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-foreground leading-none">John Doe</span>
+              <span className="text-xs text-muted-foreground mt-1">Employee</span>
+            </div>
+            <button className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
+              <LogOut className="h-5 w-5" />
+            </button>
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-foreground leading-none">John Doe</span>
-            <span className="text-xs text-muted-foreground mt-1">Employee</span>
-          </div>
-          <button className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
-            <LogOut className="h-5 w-5" />
-          </button>
         </div>
       </div>
     </div>

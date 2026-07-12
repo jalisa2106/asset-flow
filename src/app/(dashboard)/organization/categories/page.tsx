@@ -1,1 +1,5 @@
-export default function Page() { return <h1>Categories TODO</h1>; }
+import { redirect } from "next/navigation";
+
+export default function CategoriesPage() {
+  redirect("/organization");
+}

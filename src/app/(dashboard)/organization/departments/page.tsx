@@ -1,1 +1,5 @@
-export default function Page() { return <h1>Departments TODO</h1>; }
+import { redirect } from "next/navigation";
+
+export default function DepartmentsPage() {
+  redirect("/organization");
+}
