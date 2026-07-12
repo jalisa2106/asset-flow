@@ -6,6 +6,7 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-booking-conflict-overlay: var(--booking-conflict-overlay);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
@@ -86,6 +87,7 @@
   --sidebar-accent-foreground: #1E293B;
   --sidebar-border: #E2E8F0;
   --sidebar-ring: #1E3A8A;
+  --booking-conflict-overlay: #D9ECFF;
 }
 
 .dark {
