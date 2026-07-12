@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentProfile } from '@/lib/auth-context';
 import { can } from '@/lib/permissions';
-import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
+import { unauthorized, fromPostgresError } from '@/lib/api-response';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

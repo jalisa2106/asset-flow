@@ -776,6 +776,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      report_utilization_by_department: {
+        Args: { p_from: string; p_to: string }
+        Returns: { department_id: string; department_name: string; active_count: number; total_count: number }[]
+      }
+      report_maintenance_frequency: {
+        Args: { p_from: string; p_to: string }
+        Returns: { asset_id: string; asset_tag: string; asset_name: string; request_count: number; avg_resolution_hours: number | null }[]
+      }
+      report_booking_heatmap: {
+        Args: { p_from: string; p_to: string }
+        Returns: { resource_asset_id: string; resource_name: string; hour_bucket: number; booking_count: number }[]
+      }
+      report_due_for_attention: {
+        Args: Record<PropertyKey, never>
+        Returns: { asset_id: string; asset_tag: string; asset_name: string; reason: string; detail: string }[]
+      }
     }
     Enums: {
       allocation_status: "Active" | "Returned" | "Transferred"

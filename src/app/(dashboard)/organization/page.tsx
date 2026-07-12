@@ -144,6 +144,7 @@ export default function OrganizationSetupPage() {
   const onAddDept = (data: z.input<typeof departmentSchema>) => {
     const headEmpName = employees.find((e) => e.id === data.headEmployeeId)?.fullName || "None";
     const newDept: Department = {
+      // eslint-disable-next-line react-hooks/purity
       id: `dept-${Date.now()}`,
       name: data.name,
       head: headEmpName,
@@ -158,6 +159,7 @@ export default function OrganizationSetupPage() {
 
   const onAddCat = (data: CategoryInput) => {
     const newCat: Category = {
+      // eslint-disable-next-line react-hooks/purity
       id: `cat-${Date.now()}`,
       name: data.name,
       code: data.code,
@@ -172,6 +174,7 @@ export default function OrganizationSetupPage() {
 
   const onAddEmp = (data: EmployeeInput) => {
     const newEmp: Employee = {
+      // eslint-disable-next-line react-hooks/purity
       id: `emp-${Date.now()}`,
       fullName: data.fullName,
       email: data.email,
@@ -206,6 +209,7 @@ export default function OrganizationSetupPage() {
   const openPromoteModal = (empId: string, currentRole: string, currentDeptId: string) => {
     setSelectedEmployeeId(empId);
     resetPromoteForm({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       role: currentRole as any,
       departmentId: currentDeptId,
     });
@@ -226,7 +230,7 @@ export default function OrganizationSetupPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Organization Setup</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your organization's departments, asset categories, and employee roles.
+            Manage your organization&apos;s departments, asset categories, and employee roles.
           </p>
         </div>
         <Button

@@ -29,8 +29,10 @@ function LoginForm() {
 
   useEffect(() => {
     if (tabParam === "signup") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab("signup");
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab("login");
     }
   }, [tabParam]);
@@ -57,7 +59,7 @@ function LoginForm() {
     defaultValues: { fullName: "", email: "", password: "" },
   });
 
-  const onLogin = async (data: LoginInput) => {
+  const onLogin = async (_data: LoginInput) => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsLoading(false);
@@ -65,7 +67,7 @@ function LoginForm() {
     router.push("/dashboard");
   };
 
-  const onSignup = async (data: SignupInput) => {
+  const onSignup = async (_data: SignupInput) => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsLoading(false);

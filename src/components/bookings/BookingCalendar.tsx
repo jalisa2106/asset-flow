@@ -43,8 +43,6 @@ function calculateHeight(startTime: string, endTime: string, rowHeight = 64) {
 
 export function BookingCalendar({ dateStr, bookings, attemptedSlot }: BookingCalendarProps) {
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
-  const rowHeight = 64; // 4rem
-
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       <div className="bg-muted/30 px-6 py-4 border-b border-border">

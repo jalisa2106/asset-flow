@@ -5,7 +5,7 @@ import { can } from '@/lib/permissions';
 import { departmentSchema } from '@/lib/validators/org-setup.schema';
 import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const supabase = await createClient();
   const { data, error } = await supabase.from('departments').select(`
     *,

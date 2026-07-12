@@ -24,7 +24,7 @@ export function useUser() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [clear, setProfile]);
 
   return profile;
 }

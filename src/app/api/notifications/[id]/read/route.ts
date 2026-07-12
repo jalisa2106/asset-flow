@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentProfile } from '@/lib/auth-context';
-import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
+import { unauthorized, fromPostgresError } from '@/lib/api-response';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

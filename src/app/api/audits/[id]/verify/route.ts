@@ -14,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: cycle, error: cycleError } = await supabase
     .from('audit_cycles')
-    .select('status')
+    .select(`status, audit_cycle_auditors(employee_id)`)
     .eq('id', id)
     .single();
 

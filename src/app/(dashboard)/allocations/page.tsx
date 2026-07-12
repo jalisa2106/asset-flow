@@ -188,6 +188,7 @@ export default function AssetAllocationPage() {
       currentHolder: targetEmpName,
       currentHolderId: data.employeeId,
       currentDepartment: targetDeptName,
+      // eslint-disable-next-line react-hooks/purity
       currentAllocationId: `alloc-${Date.now()}`,
       history: [
         {
@@ -219,6 +220,7 @@ export default function AssetAllocationPage() {
       currentHolder: targetEmpName,
       currentHolderId: data.toEmployeeId,
       currentDepartment: targetEmpDept,
+      // eslint-disable-next-line react-hooks/purity
       currentAllocationId: `alloc-${Date.now()}`,
       history: [
         {
