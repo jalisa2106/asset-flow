@@ -24,60 +24,7 @@ insert into asset_categories (id, name, extra_fields) values
   ('c1000000-0000-0000-0000-000000000005', 'Office Supplies', '{}'),
   ('c1000000-0000-0000-0000-000000000006', 'Facility Rooms', '{}');
 
--- ============================================================
--- AUTH USERS + EMPLOYEE PROFILES (12: 4 named test logins + 8 supporting)
--- Directly inserting into auth.users is the standard way to seed test
--- accounts (Supabase's GoTrue reads straight from this table).
--- email_confirmed_at is set so these can log in immediately, no email step.
--- ============================================================
-insert into auth.users (
-  id, instance_id, aud, role, email, encrypted_password,
-  email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data
-) values
-  ('e1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'admin@assetflow.test', crypt('admin1234', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Aditi Admin"}'),
-  ('e1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'manager@assetflow.test', crypt('manager1234', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Manoj Manager"}'),
-  ('e1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'depthead@assetflow.test', crypt('depthead1234', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Divya Depthead"}'),
-  ('e1000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'employee@assetflow.test', crypt('employee1234', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Ekta Employee"}'),
-  ('e1000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'priya.shah@assetflow.test', crypt('priya12345', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Priya Shah"}'),
-  ('e1000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'raj.mehta@assetflow.test', crypt('raj123456', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Raj Mehta"}'),
-  ('e1000000-0000-0000-0000-000000000007', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'arjun.nair@assetflow.test', crypt('arjun12345', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Arjun Nair"}'),
-  ('e1000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'sana.iqbal@assetflow.test', crypt('sana123456', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Sana Iqbal"}'),
-  ('e1000000-0000-0000-0000-000000000009', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'aditi.rao@assetflow.test', crypt('aditi123456', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Aditi Rao"}'),
-  ('e1000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'rohan.mehta@assetflow.test', crypt('rohan123456', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Rohan Mehta"}'),
-  ('e1000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'lisa.gomes@assetflow.test', crypt('lisa123456', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Lisa Gomes"}'),
-  ('e1000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-    'karan.shah@assetflow.test', crypt('karan123456', gen_salt('bf')), now(), now(), now(), '{}', '{"full_name":"Karan Shah"}');
-
--- handle_new_user() trigger has now auto-created 12 employee_profiles rows, all role='Employee'.
--- Update roles/departments/status to match intended test personas:
-update employee_profiles set role = 'Admin', department_id = 'd1000000-0000-0000-0000-000000000001'
-  where id = 'e1000000-0000-0000-0000-000000000001';
-update employee_profiles set role = 'Asset Manager', department_id = 'd1000000-0000-0000-0000-000000000002'
-  where id = 'e1000000-0000-0000-0000-000000000002';
-update employee_profiles set role = 'Department Head', department_id = 'd1000000-0000-0000-0000-000000000001'
-  where id = 'e1000000-0000-0000-0000-000000000003';
-update employee_profiles set department_id = 'd1000000-0000-0000-0000-000000000003'
-  where id = 'e1000000-0000-0000-0000-000000000004'; -- stays Employee
-
-update employee_profiles set department_id = 'd1000000-0000-0000-0000-000000000001' where id = 'e1000000-0000-0000-0000-000000000005';
-update employee_profiles set department_id = 'd1000000-0000-0000-0000-000000000001' where id = 'e1000000-0000-0000-0000-000000000006';
-update employee_profiles set department_id = 'd1000000-0000-0000-0000-000000000002' where id = 'e1000000-0000-0000-0000-000000000007';
-update employee_profiles set role = 'Department Head', department_id = 'd1000000-0000-0000-0000-000000000004' where id = 'e1000000-0000-0000-0000-000000000008';
-update employee_profiles set role = 'Asset Manager', department_id = 'd1000000-0000-0000-0000-000000000005' where id = 'e1000000-0000-0000-0000-000000000009';
-update employee_profiles set department_id = 'd1000000-0000-0000-0000-000000000003' where id = 'e1000000-0000-0000-0000-000000000010';
-update employee_profiles set department_id = 'd1000000-0000-0000-0000-000000000004' where id = 'e1000000-0000-0000-0000-000000000011';
-update employee_profiles set status = 'Inactive', department_id = 'd1000000-0000-0000-0000-000000000006' where id = 'e1000000-0000-0000-0000-000000000012';
+-- auth.users seeding moved to scripts/seed-test-users.ts
 
 -- wire department heads now that employees exist
 update departments set head_employee_id = 'e1000000-0000-0000-0000-000000000003' where id = 'd1000000-0000-0000-0000-000000000001';

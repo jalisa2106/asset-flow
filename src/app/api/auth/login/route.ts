@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
 
-  const { data: lockedOut } = await supabase.rpc('is_login_locked_out', { p_email: parsed.data.email });
+  const { data: lockedOut, error: rpcError } = await supabase.rpc('is_login_locked_out', { p_email: parsed.data.email });
+  if (rpcError) {
+    console.error('RPC error:', rpcError);
+  }
   if (lockedOut) {
     return NextResponse.json(
       { error: 'Too many failed attempts. Try again in 15 minutes.' },
@@ -28,6 +31,8 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
+    console.error('Login error:', error);
+    require('fs').writeFileSync('/tmp/login_error.txt', JSON.stringify(error, null, 2));
     return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
   }
 

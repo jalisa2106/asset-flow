@@ -6,14 +6,17 @@ export async function GET() {
   const { supabase, profile } = await getCurrentProfile();
   if (!profile) return apiError('Not authenticated', 401);
 
-  const [available, allocated, reserved, activeBookings, pendingTransfers, overdue, recentActivity] = await Promise.all([
+  const [available, allocated, reserved, activeBookings, pendingTransfers, overdue, recentActivity, myAllocations, myBookings, myMaintenance] = await Promise.all([
     supabase.from('assets').select('id', { count: 'exact', head: true }).eq('status', 'Available'),
     supabase.from('assets').select('id', { count: 'exact', head: true }).eq('status', 'Allocated'),
     supabase.from('assets').select('id', { count: 'exact', head: true }).eq('status', 'Reserved'),
     supabase.from('resource_bookings').select('id', { count: 'exact', head: true }).in('status', ['Upcoming', 'Ongoing']),
     supabase.from('transfer_requests').select('id', { count: 'exact', head: true }).eq('status', 'Requested'),
-    supabase.from('allocations').select('id, expected_return_date, asset_id, employee_id, assets(name, asset_tag), employee_profiles!employee_id(full_name)').eq('status', 'Active').lt('expected_return_date', new Date().toISOString().slice(0, 10)),
-    supabase.from('activity_log').select('id, action, entity_type, entity_id, created_at, actor_id, employee_profiles(full_name)').order('created_at', { ascending: false }).limit(8),
+    supabase.from('allocations').select('id, expected_return_date, asset_id, employee_id').eq('status', 'Active').lt('expected_return_date', new Date().toISOString().slice(0, 10)),
+    supabase.from('activity_log').select('id, action, entity_type, entity_id, created_at, actor_id').order('created_at', { ascending: false }).limit(8),
+    supabase.from('allocations').select('*, asset:assets(name, asset_tag)').eq('employee_id', profile.id).eq('status', 'Active'),
+    supabase.from('resource_bookings').select('*, asset:assets(name, asset_tag)').eq('booked_by', profile.id).in('status', ['Upcoming', 'Ongoing']),
+    supabase.from('maintenance_requests').select('*, asset:assets(name, asset_tag)').eq('reported_by', profile.id).in('status', ['Pending', 'In Progress', 'Assigned']),
   ]);
 
   return NextResponse.json({
@@ -27,5 +30,10 @@ export async function GET() {
     },
     overdueReturns: overdue.data ?? [],
     recentActivity: recentActivity.data ?? [],
+    mine: {
+      allocations: myAllocations.data ?? [],
+      bookings: myBookings.data ?? [],
+      maintenance: myMaintenance.data ?? [],
+    }
   });
 }

@@ -7,11 +7,14 @@ import { apiError, unauthorized, fromPostgresError } from '@/lib/api-response';
 import { MAX_PAGE_SIZE } from '@/lib/constants';
 
 export async function GET(req: NextRequest) {
-  const supabase = await createClient();
+  const { supabase, profile } = await getCurrentProfile();
+  if (!profile) return unauthorized();
+
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
   const reportedBy = searchParams.get('reportedBy');
   const assetId = searchParams.get('assetId');
+  const mine = searchParams.get('mine');
   const page = Number(searchParams.get('page') ?? '1');
   const pageSize = Math.min(Number(searchParams.get('pageSize') ?? '25'), MAX_PAGE_SIZE);
 
@@ -22,9 +25,10 @@ export async function GET(req: NextRequest) {
     assigned:employee_profiles!assigned_to(full_name)
   `, { count: 'exact' });
 
-  if (status) query = query.eq('status', status);
+  if (status) query = query.eq('status', status as any);
   if (reportedBy) query = query.eq('reported_by', reportedBy);
   if (assetId) query = query.eq('asset_id', assetId);
+  if (mine === 'true' || profile.role === 'Employee') query = query.eq('reported_by', profile.id);
 
   const from = (page - 1) * pageSize;
   query = query.range(from, from + pageSize - 1).order('reported_at', { ascending: false });

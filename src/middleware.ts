@@ -18,12 +18,17 @@ const ROUTE_ROLES: Record<string, string[]> = {
 // State-changing HTTP methods must originate from our own site — basic CSRF defense
 // on top of SameSite=Lax cookies (which already block most cross-site form posts).
 const UNSAFE_METHODS = ['POST', 'PATCH', 'PUT', 'DELETE'];
+const CSRF_EXEMPT_PREFIXES = ['/api/auth/'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   // --- CSRF: reject cross-origin state-changing requests to /api/** ---
-  if (request.nextUrl.pathname.startsWith('/api/') && UNSAFE_METHODS.includes(request.method)) {
+  if (
+    request.nextUrl.pathname.startsWith('/api/') &&
+    !CSRF_EXEMPT_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p)) &&
+    UNSAFE_METHODS.includes(request.method)
+  ) {
     const origin = request.headers.get('origin');
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     if (origin && siteUrl && origin !== siteUrl) {

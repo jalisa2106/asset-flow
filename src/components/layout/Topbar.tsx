@@ -2,9 +2,11 @@
 
 import { Search, Bell, Menu } from "lucide-react";
 import { useUiStore } from "@/store/uiStore";
+import { useAuthStore } from "@/store/authStore";
 
 export function Topbar() {
   const { toggleMobileSidebar } = useUiStore();
+  const profile = useAuthStore((s) => s.profile);
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-border bg-background px-4 md:px-6">
@@ -25,6 +27,9 @@ export function Topbar() {
         </div>
       </div>
       <div className="flex items-center gap-2 md:gap-4">
+        <span className="hidden sm:inline-block text-sm font-medium mr-4 text-muted-foreground">
+          {profile ? `${profile.full_name} · ${profile.role}` : ''}
+        </span>
         <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors sm:hidden">
           <Search className="h-5 w-5" />
         </button>

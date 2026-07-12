@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (fetchError || !booking) return apiError('Booking not found', 404);
   if (!can.cancelBooking(profile, booking)) return unauthorized(); // use same rule for reschedule
-  if (booking.status !== 'Active') return apiError('Only active bookings can be rescheduled', 400);
+  if (!['Upcoming', 'Ongoing'].includes(booking.status)) return apiError('Only upcoming or ongoing bookings can be rescheduled', 400);
 
   const { data, error } = await supabase
     .from('resource_bookings')

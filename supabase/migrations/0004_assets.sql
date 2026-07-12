@@ -2,7 +2,7 @@ create type asset_status as enum (
   'Available', 'Allocated', 'Reserved', 'Under Maintenance', 'Lost', 'Retired', 'Disposed'
 );
 
-create sequence asset_tag_seq start 1;
+create sequence if not exists asset_tag_seq start 1;
 
 create table assets (
   id uuid primary key default gen_random_uuid(),

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Lock, Mail, User, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
+import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import {
   loginSchema,
@@ -59,12 +60,30 @@ function LoginForm() {
     defaultValues: { fullName: "", email: "", password: "" },
   });
 
-  const onLogin = async (_data: LoginInput) => {
+  const setProfile = useAuthStore((s) => s.setProfile);
+
+  const onLogin = async (data: LoginInput) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    toast.success("Successfully logged in!");
-    router.push("/dashboard");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to log in");
+      }
+
+      setProfile(json.profile);
+      toast.success("Successfully logged in!");
+      router.push("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onSignup = async (_data: SignupInput) => {
