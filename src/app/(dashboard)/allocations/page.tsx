@@ -22,20 +22,48 @@ import {
   type CreateTransferRequestInput as TransferRequestInput,
 } from "@/lib/validators/allocation.schema";
 
-// --- MOCK DATA ---
+// --- VALID UUIDS FOR SCHEMA SATISFACTION ---
+const MOCK_UUIDS = {
+  assets: [
+    "e9d8c873-10d9-482a-bc91-9e767ebdb15a",
+    "d8d8c873-10d9-482a-bc91-9e767ebdb15b",
+    "c8d8c873-10d9-482a-bc91-9e767ebdb15c",
+    "b8d8c873-10d9-482a-bc91-9e767ebdb15d",
+  ],
+  employees: [
+    "1111c873-10d9-482a-bc91-9e767ebdb15a",
+    "2222c873-10d9-482a-bc91-9e767ebdb15b",
+    "3333c873-10d9-482a-bc91-9e767ebdb15c",
+    "4444c873-10d9-482a-bc91-9e767ebdb15d",
+    "5555c873-10d9-482a-bc91-9e767ebdb15e",
+  ],
+  departments: [
+    "aaaaa873-10d9-482a-bc91-9e767ebdb15a",
+    "bbbbb873-10d9-482a-bc91-9e767ebdb15b",
+    "ccccc873-10d9-482a-bc91-9e767ebdb15c",
+    "ddddd873-10d9-482a-bc91-9e767ebdb15d",
+  ],
+  allocations: [
+    "7777c873-10d9-482a-bc91-9e767ebdb15a",
+    "8888c873-10d9-482a-bc91-9e767ebdb15b",
+    "9999c873-10d9-482a-bc91-9e767ebdb15c",
+    "0000c873-10d9-482a-bc91-9e767ebdb15d",
+  ]
+};
+
 const MOCK_EMPLOYEES = [
-  { id: "emp-1", fullName: "Priya Shah", department: "Engineering" },
-  { id: "emp-2", fullName: "Arjun Nair", department: "Engineering" },
-  { id: "emp-3", fullName: "Alice Vance", department: "Engineering" },
-  { id: "emp-4", fullName: "Bob Smith", department: "Frontend Core" },
-  { id: "emp-5", fullName: "Clara Jones", department: "Design Studio" },
+  { id: MOCK_UUIDS.employees[0], fullName: "Priya Shah", department: "Engineering" },
+  { id: MOCK_UUIDS.employees[1], fullName: "Arjun Nair", department: "Engineering" },
+  { id: MOCK_UUIDS.employees[2], fullName: "Alice Vance", department: "Engineering" },
+  { id: MOCK_UUIDS.employees[3], fullName: "Bob Smith", department: "Frontend Core" },
+  { id: MOCK_UUIDS.employees[4], fullName: "Clara Jones", department: "Design Studio" },
 ];
 
 const MOCK_DEPARTMENTS = [
-  { id: "dept-1", name: "Engineering" },
-  { id: "dept-2", name: "Frontend Core" },
-  { id: "dept-3", name: "Design Studio" },
-  { id: "dept-4", name: "Operations" },
+  { id: MOCK_UUIDS.departments[0], name: "Engineering" },
+  { id: MOCK_UUIDS.departments[1], name: "Frontend Core" },
+  { id: MOCK_UUIDS.departments[2], name: "Design Studio" },
+  { id: MOCK_UUIDS.departments[3], name: "Operations" },
 ];
 
 interface Asset {
@@ -44,7 +72,9 @@ interface Asset {
   name: string;
   status: "Available" | "Allocated";
   currentHolder?: string;
+  currentHolderId?: string;
   currentDepartment?: string;
+  currentAllocationId?: string;
   history: Array<{
     date: string;
     action: string;
@@ -55,19 +85,21 @@ interface Asset {
 
 const INITIAL_ASSETS: Asset[] = [
   {
-    id: "asset-1",
+    id: MOCK_UUIDS.assets[0],
     tag: "AF-0114",
     name: "Dell Laptop Latitude 5420",
     status: "Allocated",
     currentHolder: "Priya Shah",
+    currentHolderId: MOCK_UUIDS.employees[0],
     currentDepartment: "Engineering",
+    currentAllocationId: MOCK_UUIDS.allocations[0],
     history: [
       { date: "2026-03-12", action: "Allocated", actor: "Priya Shah", note: "Allocated for core dev task. Condition: Good" },
       { date: "2026-01-09", action: "Returned", actor: "Arjun Nair", note: "Returned. Condition: Good" },
     ],
   },
   {
-    id: "asset-2",
+    id: MOCK_UUIDS.assets[1],
     tag: "AF-0033",
     name: "Herman Miller Aeron Chair",
     status: "Available",
@@ -76,18 +108,20 @@ const INITIAL_ASSETS: Asset[] = [
     ],
   },
   {
-    id: "asset-3",
+    id: MOCK_UUIDS.assets[2],
     tag: "AF-0912",
     name: "Apple MacBook Pro 16",
     status: "Allocated",
     currentHolder: "Alice Vance",
+    currentHolderId: MOCK_UUIDS.employees[2],
     currentDepartment: "Engineering",
+    currentAllocationId: MOCK_UUIDS.allocations[1],
     history: [
       { date: "2026-04-01", action: "Allocated", actor: "Alice Vance", note: "New hire allocation." },
     ],
   },
   {
-    id: "asset-4",
+    id: MOCK_UUIDS.assets[3],
     tag: "AF-0089",
     name: "Logitech MX Master 3S Mouse",
     status: "Available",
@@ -100,6 +134,7 @@ const INITIAL_ASSETS: Asset[] = [
 export default function AssetAllocationPage() {
   const [assets, setAssets] = useState<Asset[]>(INITIAL_ASSETS);
   const [selectedAssetId, setSelectedAssetId] = useState<string>("");
+  const [notesText, setNotesText] = useState("");
 
   const selectedAsset = useMemo(() => {
     return assets.find((a) => a.id === selectedAssetId);
@@ -113,7 +148,7 @@ export default function AssetAllocationPage() {
     reset: resetAllocForm,
   } = useForm<AllocationInput>({
     resolver: zodResolver(allocationSchema),
-    defaultValues: { assetId: "", employeeId: "", departmentId: "", notes: "", expectedReturnDate: "" },
+    defaultValues: { assetId: "", employeeId: "", departmentId: "", expectedReturnDate: "" },
   });
 
   // Transfer Form (Allocated assets)
@@ -124,17 +159,18 @@ export default function AssetAllocationPage() {
     reset: resetTransferForm,
   } = useForm<TransferRequestInput>({
     resolver: zodResolver(transferRequestSchema),
-    defaultValues: { assetId: "", fromEmployeeId: "", toEmployeeId: "", reason: "" },
+    defaultValues: { allocationId: "", toEmployeeId: "", reason: "" },
   });
 
   // Handle select asset change
   const handleAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setSelectedAssetId(val);
-    resetAllocForm({ assetId: val, employeeId: "", departmentId: "", notes: "", expectedReturnDate: "" });
+    setNotesText("");
+    
+    resetAllocForm({ assetId: val, employeeId: "", departmentId: "", expectedReturnDate: "" });
     resetTransferForm({
-      assetId: val,
-      fromEmployeeId: assets.find((a) => a.id === val)?.currentHolder || "",
+      allocationId: assets.find((a) => a.id === val)?.currentAllocationId || "",
       toEmployeeId: "",
       reason: "",
     });
@@ -150,13 +186,15 @@ export default function AssetAllocationPage() {
       ...selectedAsset,
       status: "Allocated",
       currentHolder: targetEmpName,
+      currentHolderId: data.employeeId,
       currentDepartment: targetDeptName,
+      currentAllocationId: `alloc-${Date.now()}`,
       history: [
         {
           date: new Date().toISOString().split("T")[0],
           action: "Allocated",
           actor: targetEmpName,
-          note: data.notes || "No notes provided.",
+          note: notesText || "No notes provided.",
         },
         ...selectedAsset.history,
       ],
@@ -165,6 +203,7 @@ export default function AssetAllocationPage() {
     setAssets(assets.map((a) => (a.id === selectedAsset.id ? updatedAsset : a)));
     toast.success(`Asset "${selectedAsset.name}" allocated to ${targetEmpName}.`);
     setSelectedAssetId("");
+    setNotesText("");
     resetAllocForm();
   };
 
@@ -178,13 +217,15 @@ export default function AssetAllocationPage() {
       ...selectedAsset,
       status: "Allocated",
       currentHolder: targetEmpName,
+      currentHolderId: data.toEmployeeId,
       currentDepartment: targetEmpDept,
+      currentAllocationId: `alloc-${Date.now()}`,
       history: [
         {
           date: new Date().toISOString().split("T")[0],
           action: "Transferred",
           actor: targetEmpName,
-          note: `Transferred from ${selectedAsset.currentHolder}. Reason: ${data.reason}`,
+          note: `Transferred from ${selectedAsset.currentHolder}. Reason: ${data.reason || "None provided."}`,
         },
         ...selectedAsset.history,
       ],
@@ -269,7 +310,7 @@ export default function AssetAllocationPage() {
                         {...registerTransfer("toEmployeeId")}
                       >
                         <option value="">-- Select Target Employee --</option>
-                        {MOCK_EMPLOYEES.filter((emp) => emp.fullName !== selectedAsset.currentHolder).map((emp) => (
+                        {MOCK_EMPLOYEES.filter((emp) => emp.id !== selectedAsset.currentHolderId).map((emp) => (
                           <option key={emp.id} value={emp.id}>
                             {emp.fullName} ({emp.department})
                           </option>
@@ -373,8 +414,9 @@ export default function AssetAllocationPage() {
                   <textarea
                     placeholder="Enter condition details or notes..."
                     rows={3}
+                    value={notesText}
+                    onChange={(e) => setNotesText(e.target.value)}
                     className="block w-full rounded-lg border border-input bg-background py-2.5 px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
-                    {...registerAlloc("notes")}
                   />
                 </div>
 
