@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   if (assets && assets.length > 0) {
     const items = assets.map(a => ({
-      cycle_id: cycle.id,
+      audit_cycle_id: cycle.id,
       asset_id: a.id,
       verification: 'Pending' as const,
     }));
