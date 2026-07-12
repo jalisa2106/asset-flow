@@ -90,7 +90,7 @@ function LoginForm() {
             <span className="text-2xl font-bold text-primary-foreground tracking-wider">AF</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-            Asset<span className="text-primary-foreground/80 dark:text-primary">Flow</span>
+            Asset<span className="text-primary">Flow</span>
           </h1>
           <p className="text-sm text-muted-foreground font-medium">
             Enterprise Asset & Resource Management
