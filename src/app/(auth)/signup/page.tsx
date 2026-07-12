@@ -1,1 +1,5 @@
-export default function Page() { return <h1>Signup TODO</h1>; }
+import { redirect } from "next/navigation";
+
+export default function SignupRedirectPage() {
+  redirect("/login?tab=signup");
+}
